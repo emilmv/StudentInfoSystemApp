@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using StudentInfoSystemApp.Core.Entities;
+using System.Reflection;
 
 namespace StudentInfoSystemApp.DataAccess.Data
 {
@@ -16,6 +17,11 @@ namespace StudentInfoSystemApp.DataAccess.Data
         
         public StudentInfoSystemContext(DbContextOptions options) : base(options)
         {
+        }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+            base.OnModelCreating(modelBuilder);
         }
     }
 }
