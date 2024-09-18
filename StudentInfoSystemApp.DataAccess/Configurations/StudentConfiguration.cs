@@ -20,19 +20,23 @@ namespace StudentInfoSystemApp.DataAccess.Configurations
                 .IsRequired();
 
             builder.Property(s => s.Gender)
+                .IsRequired()
                 .HasMaxLength(10);
 
             builder.Property(s => s.Email)
                 .HasMaxLength(255);
 
             builder.Property(s => s.PhoneNumber)
+                .IsRequired()
                 .HasMaxLength(20);
 
             builder.Property(s => s.Address)
+                .IsRequired()
                 .HasMaxLength(500);
 
             builder.Property(s => s.EnrollmentDate)
-                .IsRequired();
+                .IsRequired()
+                .HasDefaultValueSql("GetDate()");
 
             builder.Property(s => s.Status)
                 .HasDefaultValue("Active")

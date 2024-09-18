@@ -23,7 +23,8 @@ namespace StudentInfoSystemApp.DataAccess.Configurations
                 .HasMaxLength(20);
 
             builder.Property(i => i.HireDate)
-                .IsRequired();
+                .IsRequired()
+                .HasDefaultValueSql("GetDate()");
 
             builder.HasOne(i => i.Department)
                 .WithMany(d => d.Instructors)

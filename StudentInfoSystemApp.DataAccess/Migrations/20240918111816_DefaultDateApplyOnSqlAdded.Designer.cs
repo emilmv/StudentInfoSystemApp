@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StudentInfoSystemApp.DataAccess.Data;
 
@@ -11,9 +12,11 @@ using StudentInfoSystemApp.DataAccess.Data;
 namespace StudentInfoSystemApp.DataAccess.Migrations
 {
     [DbContext(typeof(StudentInfoSystemContext))]
-    partial class StudentInfoSystemContextModelSnapshot : ModelSnapshot
+    [Migration("20240918111816_DefaultDateApplyOnSqlAdded")]
+    partial class DefaultDateApplyOnSqlAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -249,7 +252,6 @@ namespace StudentInfoSystemApp.DataAccess.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
 
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
@@ -271,7 +273,6 @@ namespace StudentInfoSystemApp.DataAccess.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Gender")
-                        .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
@@ -281,7 +282,6 @@ namespace StudentInfoSystemApp.DataAccess.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("PhoneNumber")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 

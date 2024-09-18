@@ -9,7 +9,8 @@ namespace StudentInfoSystemApp.DataAccess.Configurations
         public void Configure(EntityTypeBuilder<Attendance> builder)
         {
             builder.Property(a => a.AttendanceDate)
-                .IsRequired();
+                .IsRequired()
+                .HasDefaultValueSql("GetDate()");
 
             builder.Property(a => a.Status)
                 .IsRequired()

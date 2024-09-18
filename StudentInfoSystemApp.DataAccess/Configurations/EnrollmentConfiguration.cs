@@ -9,7 +9,8 @@ namespace StudentInfoSystemApp.DataAccess.Configurations
         public void Configure(EntityTypeBuilder<Enrollment> builder)
         {
             builder.Property(e => e.EnrollmentDate)
-             .IsRequired();
+             .IsRequired()
+             .HasDefaultValueSql("GetDate()");
 
             builder.Property(e => e.Grade)
                 .HasMaxLength(5);
