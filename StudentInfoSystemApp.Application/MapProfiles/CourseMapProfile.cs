@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using StudentInfoSystemApp.Application.DTOs.AttendanceDTOs;
+using StudentInfoSystemApp.Application.DTOs.CourseDTOs;
 using StudentInfoSystemApp.Core.Entities;
 
 namespace StudentInfoSystemApp.Application.MapProfiles

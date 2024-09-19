@@ -1,6 +1,6 @@
 ﻿using StudentInfoSystemApp.Core.Entities;
 
-namespace StudentInfoSystemApp.Application.DTOs.AttendanceDTOs
+namespace StudentInfoSystemApp.Application.DTOs.DepartmentDTOs
 {
     public class DepartmentReturnDTO
     {

@@ -1,6 +1,6 @@
 ﻿using StudentInfoSystemApp.Core.Entities;
 
-namespace StudentInfoSystemApp.Application.DTOs.AttendanceDTOs
+namespace StudentInfoSystemApp.Application.DTOs.InstructorDTOs
 {
     public class InstructorReturnDTO
     {
@@ -10,10 +10,10 @@ namespace StudentInfoSystemApp.Application.DTOs.AttendanceDTOs
         public string? Email { get; set; }
         public string? PhoneNumber { get; set; }
         public string? HireDate { get; set; }
+        public string? Photo { get; set; }
         //Relations below
-        public int DepartmentID { get; set; }
-        public Department? Department { get; set; }
-        public List<Schedule>? Schedules { get; set; }
+        public DepartmentInInstructorReturnDTO? Department { get; set; }
+        public List<ScheduleInInstructorReturnDTO>? Schedules { get; set; }
     }
     public class DepartmentInInstructorReturnDTO
     {
@@ -25,8 +25,8 @@ namespace StudentInfoSystemApp.Application.DTOs.AttendanceDTOs
         public int ID { get; set; }
         public string? Semester { get; set; }
         public string? ClassTime { get; set; }
-        public string? Classroom { get; set; }
+        public string? ClassRoom { get; set; }
         //Relations below
-        public Course? Course { get; set; }
+        public string? CourseName { get; set; }
     }
 }

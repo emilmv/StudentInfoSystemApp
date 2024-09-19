@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using StudentInfoSystemApp.Application.Interfaces;
 
 namespace StudentInfoSystemApp.Presentation.Controllers
 {
@@ -6,5 +7,17 @@ namespace StudentInfoSystemApp.Presentation.Controllers
     [ApiController]
     public class ScheduleController : ControllerBase
     {
+        private readonly IScheduleService _scheduleService;
+
+        public ScheduleController(IScheduleService scheduleService)
+        {
+            _scheduleService = scheduleService;
+        }
+
+        [HttpGet("")]
+        public async Task<IActionResult> Get()
+        {
+            return Ok(await _scheduleService.GetAllAsync());
+        }
     }
 }

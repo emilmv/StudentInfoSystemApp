@@ -8,6 +8,7 @@
         public string? Email { get; set; }
         public string? PhoneNumber { get; set; }
         public DateTime HireDate { get; set; }
+        public string? Photo { get; set; }
         //Relations below
         public int DepartmentID { get; set; }
         public Department? Department { get; set; }

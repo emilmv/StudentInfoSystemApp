@@ -12,6 +12,9 @@ namespace StudentInfoSystemApp.DataAccess.Configurations
              .IsRequired()
              .HasMaxLength(100);
 
+            builder.Property(i => i.Photo)
+                .IsRequired();
+
             builder.Property(i => i.LastName)
                 .IsRequired()
                 .HasMaxLength(100);

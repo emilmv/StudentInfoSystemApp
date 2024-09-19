@@ -1,4 +1,4 @@
-﻿using StudentInfoSystemApp.Application.DTOs.AttendanceDTOs;
+﻿using StudentInfoSystemApp.Application.DTOs.CourseDTOs;
 
 namespace StudentInfoSystemApp.Application.Interfaces
 {

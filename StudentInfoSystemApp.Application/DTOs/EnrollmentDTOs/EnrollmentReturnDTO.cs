@@ -1,4 +1,4 @@
-﻿namespace StudentInfoSystemApp.Application.DTOs.AttendanceDTOs
+﻿namespace StudentInfoSystemApp.Application.DTOs.EnrollmentDTOs
 {
     public class EnrollmentReturnDTO
     {
