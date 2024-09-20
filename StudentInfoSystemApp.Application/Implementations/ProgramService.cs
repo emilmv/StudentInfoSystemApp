@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using StudentInfoSystemApp.Application.DTOs.InstructorDTOs;
 using StudentInfoSystemApp.Application.DTOs.ProgramDTOs;
+using StudentInfoSystemApp.Application.Exceptions;
 using StudentInfoSystemApp.Application.Interfaces;
 using StudentInfoSystemApp.DataAccess.Data;
 
@@ -25,6 +25,17 @@ namespace StudentInfoSystemApp.Application.Implementations
                 .Include(p=>p.Courses)
                 .ToListAsync()
                 );
+        }
+        public async Task<ProgramReturnDTO> GetByIdAsync(int? id)
+        {
+            if (id is null) throw new CustomException(400, "ID", "ID must not be empty");
+            var program = await _studentInfoSystemContext
+                .Programs
+                .Include(p=>p.Students)
+                .Include (p=>p.Courses)
+                .FirstOrDefaultAsync(d => d.ID == id);
+            if (program is null) throw new CustomException(400, "ID", $"Program with ID of:'{id}'not found in the database");
+            return _mapper.Map<ProgramReturnDTO>(program);
         }
     }
 }

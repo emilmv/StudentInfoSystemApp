@@ -19,5 +19,10 @@ namespace StudentInfoSystemApp.Presentation.Controllers
         {
             return Ok(await _departmentService.GetAllAsync());
         }
+        [HttpGet("id")]
+        public async Task<IActionResult> Get(int? id)
+        {
+            return Ok(await _departmentService.GetByIdAsync(id));
+        }
     }
 }

@@ -15,6 +15,6 @@ namespace StudentInfoSystemApp.Application.DTOs.AttendanceDTOs
         public string? EnrollmentDate { get; set; }
         //Relations below
         public int StudentID { get; set; }
-        public string? Student { get; set; }
+        public string? StudentFullName { get; set; }
     }
 }
