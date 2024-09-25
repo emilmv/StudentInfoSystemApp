@@ -6,5 +6,6 @@ namespace StudentInfoSystemApp.Application.Interfaces
     {
         Task<List<CourseReturnDTO>> GetAllAsync();
         Task<CourseReturnDTO> GetByIdAsync(int? id);
+        Task<int> CreateAsync(CourseCreateDTO courseCreateDTO);
     }
 }

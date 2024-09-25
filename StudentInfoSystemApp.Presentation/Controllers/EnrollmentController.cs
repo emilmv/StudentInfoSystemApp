@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using StudentInfoSystemApp.Application.Implementations;
+using StudentInfoSystemApp.Application.DTOs.EnrollmentDTOs;
 using StudentInfoSystemApp.Application.Interfaces;
 
 namespace StudentInfoSystemApp.Presentation.Controllers
@@ -8,21 +8,26 @@ namespace StudentInfoSystemApp.Presentation.Controllers
     [ApiController]
     public class EnrollmentController : ControllerBase
     {
-        private readonly IEnrollmentService _enrollmentSealService;
+        private readonly IEnrollmentService _enrollmentService;
 
         public EnrollmentController(IEnrollmentService enrollmentSealService)
         {
-            _enrollmentSealService = enrollmentSealService;
+            _enrollmentService = enrollmentSealService;
         }
         [HttpGet("")]
         public async Task<IActionResult> Get()
         {
-            return Ok(await _enrollmentSealService.GetAllAsync());
+            return Ok(await _enrollmentService.GetAllAsync());
         }
         [HttpGet("id")]
         public async Task<IActionResult> Get(int? id)
         {
-            return Ok(await _enrollmentSealService.GetByIdAsync(id));
+            return Ok(await _enrollmentService.GetByIdAsync(id));
+        }
+        [HttpPost("")]
+        public async Task<IActionResult> Create([FromBody] EnrollmentCreateDTO enrollmentCreateDTO)
+        {
+            return Ok(await _enrollmentService.CreateAsync(enrollmentCreateDTO));
         }
     }
 }

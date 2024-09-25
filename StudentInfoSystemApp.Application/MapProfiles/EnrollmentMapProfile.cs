@@ -13,6 +13,7 @@ namespace StudentInfoSystemApp.Application.MapProfiles
         }
         public EnrollmentMapProfile(IHttpContextAccessor _httpContextAccessor)
         {
+            //Map for Return DTO
             var httpContext= _httpContextAccessor.HttpContext;
             var uriBuilder = new UriBuilder(httpContext.Request.Scheme, httpContext.Request.Host.Host, (int)httpContext.Request.Host.Port);
             var url=uriBuilder.Uri.AbsoluteUri;
@@ -24,6 +25,9 @@ namespace StudentInfoSystemApp.Application.MapProfiles
             CreateMap<Course, CourseInEnrollmentReturnDTO>();
             CreateMap<Attendance, AttendanceInEnrollmentReturnDTO>()
                 .ForMember(d=>d.AttendanceDate,map=>map.MapFrom(s=>s.AttendanceDate.ToShortDateString()));
+
+            //Map for Create DTO
+            CreateMap<EnrollmentCreateDTO, Enrollment>();
         }
     }
 }

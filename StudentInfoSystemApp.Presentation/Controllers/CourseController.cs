@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using StudentInfoSystemApp.Application.Implementations;
+using StudentInfoSystemApp.Application.DTOs.CourseDTOs;
 using StudentInfoSystemApp.Application.Interfaces;
 
 namespace StudentInfoSystemApp.Presentation.Controllers
@@ -24,6 +24,11 @@ namespace StudentInfoSystemApp.Presentation.Controllers
         public async Task<IActionResult> Get(int? id)
         {
             return Ok(await _courseService.GetByIdAsync(id));
+        }
+        [HttpPost("")]
+        public async Task<IActionResult> Create([FromBody] CourseCreateDTO courseCreateDTO)
+        {
+            return Ok(await _courseService.CreateAsync(courseCreateDTO));
         }
     }
 }

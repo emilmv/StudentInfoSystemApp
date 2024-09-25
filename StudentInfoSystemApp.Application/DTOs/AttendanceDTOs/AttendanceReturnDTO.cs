@@ -1,12 +1,9 @@
-﻿using StudentInfoSystemApp.Core.Entities;
-
-namespace StudentInfoSystemApp.Application.DTOs.AttendanceDTOs
+﻿namespace StudentInfoSystemApp.Application.DTOs.AttendanceDTOs
 {
     public class AttendanceReturnDTO
     {
         public int ID { get; set; }
         public string? AttendanceDate { get; set; }
-        public string? Status { get; set; }
         public EnrollmentInAttendanceReturnDTO? Enrollment { get; set; }
     }
     public class EnrollmentInAttendanceReturnDTO

@@ -9,7 +9,6 @@ namespace StudentInfoSystemApp.Application.MapProfiles
     {
         public StudentMapProfile()
         {
-            
         }
         public StudentMapProfile(IHttpContextAccessor _httpContextAccessor)
         {
@@ -22,7 +21,7 @@ namespace StudentInfoSystemApp.Application.MapProfiles
                 .ForMember(d => d.Photo, map => map.MapFrom(s => url + "images/" + s.Photo));
             CreateMap<Program, ProgramInStudentReturnDTO>();
             CreateMap<Enrollment, EnrollmentInStudentReturnDTO>()
-                .ForMember(d=>d.EnrollmentDate,map=>map.MapFrom(s=>s.EnrollmentDate.ToShortDateString()));
+                .ForMember(d=>d.CourseRegistrationDate,map=>map.MapFrom(s=>s.EnrollmentDate.ToShortDateString()));
         }
     }
 }

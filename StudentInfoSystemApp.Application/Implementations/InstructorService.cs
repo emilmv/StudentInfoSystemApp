@@ -18,7 +18,6 @@ namespace StudentInfoSystemApp.Application.Implementations
             _mapper = mapper;
         }
 
-
         public async Task<List<InstructorReturnDTO>> GetAllAsync()
         {
             return _mapper.Map<List<InstructorReturnDTO>>(await _studentInfoSystemContext
@@ -28,6 +27,7 @@ namespace StudentInfoSystemApp.Application.Implementations
                 .ThenInclude(ii=>ii.Course)
                 .ToListAsync());
         }
+
         public async Task<InstructorReturnDTO> GetByIdAsync(int? id)
         {
             if (id is null) throw new CustomException(400, "ID", "ID must not be empty");
@@ -39,6 +39,11 @@ namespace StudentInfoSystemApp.Application.Implementations
                 .FirstOrDefaultAsync(d => d.ID == id);
             if (instructor is null) throw new CustomException(400, "ID", $"Instructor with ID of:'{id}'not found in the database");
             return _mapper.Map<InstructorReturnDTO>(instructor);
+        }
+
+        public async Task<int> CreateAsync(InstructorCreateDTO ınstructorCreateDTO)
+        {
+            throw new NotImplementedException();
         }
     }
 }

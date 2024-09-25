@@ -1,5 +1,9 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using StudentInfoSystemApp.Application.DTOs.AttendanceDTOs;
 using StudentInfoSystemApp.Application.Implementations;
 using StudentInfoSystemApp.Application.Interfaces;
 using StudentInfoSystemApp.Application.MapProfiles;
@@ -35,6 +39,10 @@ builder.Services.AddScoped<IInstructorService, InstructorService>();
 builder.Services.AddScoped<IProgramService, ProgramService>();
 builder.Services.AddScoped<IScheduleService, ScheduleService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
+builder.Services.AddValidatorsFromAssemblyContaining<AttendanceCreateDTO>();
+builder.Services.AddFluentValidationRulesToSwagger();
 builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddAutoMapper(typeof(AttendanceMapProfile).Assembly);

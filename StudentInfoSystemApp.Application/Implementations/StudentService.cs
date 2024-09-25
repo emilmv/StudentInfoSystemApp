@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using StudentInfoSystemApp.Application.DTOs.ScheduleDTOs;
 using StudentInfoSystemApp.Application.DTOs.StudentDTOs;
 using StudentInfoSystemApp.Application.Exceptions;
 using StudentInfoSystemApp.Application.Interfaces;

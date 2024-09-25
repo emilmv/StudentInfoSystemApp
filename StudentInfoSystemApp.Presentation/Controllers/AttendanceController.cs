@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using StudentInfoSystemApp.Application.DTOs.AttendanceDTOs;
 using StudentInfoSystemApp.Application.Interfaces;
 
 namespace StudentInfoSystemApp.Presentation.Controllers
@@ -23,6 +24,11 @@ namespace StudentInfoSystemApp.Presentation.Controllers
         public async Task<IActionResult> Get(int? id)
         {
             return Ok(await _attendanceService.GetByIdAsync(id));
+        }
+        [HttpPost("")]
+        public async Task<IActionResult>Create([FromBody]AttendanceCreateDTO attendanceCreateDTO)
+        {
+            return Ok(await _attendanceService.CreateAsync(attendanceCreateDTO));
         }
     }
 }
