@@ -87,5 +87,21 @@ namespace StudentInfoSystemApp.Application.Implementations
             //Returning the ID of the created entity
             return program.ID;
         }
+        public async Task<bool> DeleteAsync(int? id)
+        {
+            //Checking if requested ID is mentioned
+            if (id is null) throw new CustomException(400, "ID", "ID cannot be empty");
+
+            //Checking if a Program with requested ID exists in the database
+            var existingProgram = _studentInfoSystemContext.Programs.SingleOrDefault(a => a.ID == id);
+            if (existingProgram == null) throw new CustomException(400, "ID", $"A program with ID of: '{id}' not found in the database");
+
+            //Deleting the requested attendance
+            _studentInfoSystemContext.Programs.Remove(existingProgram);
+            await _studentInfoSystemContext.SaveChangesAsync();
+
+            //Returning true if delete successful
+            return true;
+        }
     }
 }

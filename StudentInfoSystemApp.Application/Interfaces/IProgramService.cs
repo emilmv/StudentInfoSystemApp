@@ -8,5 +8,7 @@ namespace StudentInfoSystemApp.Application.Interfaces
         Task<PaginationListDTO<ProgramReturnDTO>> GetAllAsync(int page = 1, string searchInput = "");
         Task<ProgramReturnDTO> GetByIdAsync(int? id);
         Task<int> CreateAsync(ProgramCreateDTO programCreateDTO);
+        Task<bool> DeleteAsync(int? id);
+
     }
 }

@@ -32,5 +32,10 @@ namespace StudentInfoSystemApp.Presentation.Controllers
         {
             return Ok(await _instructorService.CreateAsync(instructorCreateDTO));
         }
+        [HttpDelete("id")]
+        public async Task<IActionResult> DeleteAsync(int? id)
+        {
+            return Ok(await _instructorService.DeleteAsync(id));
+        }
     }
 }

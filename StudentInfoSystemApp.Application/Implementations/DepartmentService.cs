@@ -74,5 +74,21 @@ namespace StudentInfoSystemApp.Application.Implementations
             //Returning the ID of the created entity
             return department.ID;
         }
+        public async Task<bool> DeleteAsync(int? id)
+        {
+            //Checking if requested ID is mentioned
+            if (id is null) throw new CustomException(400, "ID", "ID cannot be empty");
+
+            //Checking if a Department with requested ID exists in the database
+            var existingDepartment = _studentInfoSystemContext.Departments.SingleOrDefault(a => a.ID == id);
+            if (existingDepartment == null) throw new CustomException(400, "ID", $"A department with ID of: '{id}' not found in the database");
+
+            //Deleting the requested attendance
+            _studentInfoSystemContext.Departments.Remove(existingDepartment);
+            await _studentInfoSystemContext.SaveChangesAsync();
+
+            //Returning true if delete successful
+            return true;
+        }
     }
 }

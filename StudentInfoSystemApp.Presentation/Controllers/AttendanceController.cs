@@ -30,5 +30,10 @@ namespace StudentInfoSystemApp.Presentation.Controllers
         {
             return Ok(await _attendanceService.CreateAsync(attendanceCreateDTO));
         }
+        [HttpDelete("id")]
+        public async Task<IActionResult>DeleteAsync(int? id)
+        {
+            return Ok(await _attendanceService.DeleteAsync(id));
+        }
     }
 }

@@ -99,5 +99,21 @@ namespace StudentInfoSystemApp.Application.Implementations
             //Returning the ID of the created entity
             return schedule.ID;
         }
+        public async Task<bool> DeleteAsync(int? id)
+        {
+            //Checking if requested ID is mentioned
+            if (id is null) throw new CustomException(400, "ID", "ID cannot be empty");
+
+            //Checking if a Schedule with requested ID exists in the database
+            var existingSchedule = _studentInfoSystemContext.Schedules.SingleOrDefault(a => a.ID == id);
+            if (existingSchedule == null) throw new CustomException(400, "ID", $"A schedule with ID of: '{id}' not found in the database");
+
+            //Deleting the requested attendance
+            _studentInfoSystemContext.Schedules.Remove(existingSchedule);
+            await _studentInfoSystemContext.SaveChangesAsync();
+
+            //Returning true if delete successful
+            return true;
+        }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using StudentInfoSystemApp.Application.DTOs.EnrollmentDTOs;
+using StudentInfoSystemApp.Application.Implementations;
 using StudentInfoSystemApp.Application.Interfaces;
 
 namespace StudentInfoSystemApp.Presentation.Controllers
@@ -28,6 +29,11 @@ namespace StudentInfoSystemApp.Presentation.Controllers
         public async Task<IActionResult> Create([FromForm] EnrollmentCreateDTO enrollmentCreateDTO)
         {
             return Ok(await _enrollmentService.CreateAsync(enrollmentCreateDTO));
+        }
+        [HttpDelete("id")]
+        public async Task<IActionResult> DeleteAsync(int? id)
+        {
+            return Ok(await _enrollmentService.DeleteAsync(id));
         }
     }
 }

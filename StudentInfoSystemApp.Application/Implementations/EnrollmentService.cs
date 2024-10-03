@@ -114,5 +114,21 @@ namespace StudentInfoSystemApp.Application.Implementations
             //Returning the ID of the created entity
             return enrollment.ID;
         }
+        public async Task<bool> DeleteAsync(int? id)
+        {
+            //Checking if requested ID is mentioned
+            if (id is null) throw new CustomException(400, "ID", "ID cannot be empty");
+
+            //Checking if an Enrollment with requested ID exists in the database
+            var existingEnrollment = _studentInfoSystemContext.Enrollments.SingleOrDefault(a => a.ID == id);
+            if (existingEnrollment == null) throw new CustomException(400, "ID", $"An enrollment with ID of: '{id}' not found in the database");
+
+            //Deleting the requested attendance
+            _studentInfoSystemContext.Enrollments.Remove(existingEnrollment);
+            await _studentInfoSystemContext.SaveChangesAsync();
+
+            //Returning true if delete successful
+            return true;
+        }
     }
 }

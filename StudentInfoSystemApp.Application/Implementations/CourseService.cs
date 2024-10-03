@@ -59,9 +59,9 @@ namespace StudentInfoSystemApp.Application.Implementations
             if (id is null) throw new CustomException(400, "ID", "ID must not be empty");
             var course = await _studentInfoSystemContext
                 .Courses
-                .Include(c=>c.Program)
-                .Include (c=>c.Enrollments)
-                .Include(c=>c.Schedules)
+                .Include(c => c.Program)
+                .Include(c => c.Enrollments)
+                .Include(c => c.Schedules)
                 .FirstOrDefaultAsync(c => c.ID == id);
             if (course is null) throw new CustomException(400, "ID", $"Course with ID of:'{id}'not found in the database");
             return _mapper.Map<CourseReturnDTO>(course);
@@ -72,7 +72,7 @@ namespace StudentInfoSystemApp.Application.Implementations
             var query = _studentInfoSystemContext.Courses;
 
             //Checking if Course exists in the database
-            var existCourse= await query.SingleOrDefaultAsync(c=>c.CourseName.ToLower() == courseCreateDTO.CourseName.ToLower());
+            var existCourse = await query.SingleOrDefaultAsync(c => c.CourseName.ToLower() == courseCreateDTO.CourseName.ToLower());
             if (existCourse != null)
                 throw new CustomException(400, "CourseName", $"Course with name of: '{courseCreateDTO.CourseName}' already exists in the database.");
 
@@ -80,7 +80,7 @@ namespace StudentInfoSystemApp.Application.Implementations
             var existingCourseCode = await query.SingleOrDefaultAsync(c => c.CourseCode.ToLower() == courseCreateDTO.CourseCode.ToLower());
             if (existingCourseCode != null)
                 throw new CustomException(400, "CourseCode", $"A course with code of: '{courseCreateDTO.CourseCode}' already exists in the database");
-            
+
             //Finding relevant Program
             var program = await _studentInfoSystemContext.Programs.SingleOrDefaultAsync(e => e.ID == courseCreateDTO.ProgramID);
             if (program is null)
@@ -95,6 +95,22 @@ namespace StudentInfoSystemApp.Application.Implementations
 
             //Returning the ID of the created entity
             return course.ID;
+        }
+        public async Task<bool> DeleteAsync(int? id)
+        {
+            //Checking if requested ID is mentioned
+            if (id is null) throw new CustomException(400, "ID", "ID cannot be empty");
+
+            //Checking if a Course with requested ID exists in the database
+            var existingCourse = _studentInfoSystemContext.Courses.SingleOrDefault(c => c.ID == id);
+            if (existingCourse is null) throw new CustomException(400, "ID", $"A Course with ID of: '{id}' not found in the database");
+
+            //Deleting the requested attendance
+            _studentInfoSystemContext.Courses.Remove(existingCourse);
+            await _studentInfoSystemContext.SaveChangesAsync();
+
+            //Returning true if delete successful
+            return true;
         }
     }
 }

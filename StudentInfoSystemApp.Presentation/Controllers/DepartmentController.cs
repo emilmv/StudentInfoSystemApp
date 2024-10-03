@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using StudentInfoSystemApp.Application.DTOs.DepartmentDTOs;
+using StudentInfoSystemApp.Application.Implementations;
 using StudentInfoSystemApp.Application.Interfaces;
 
 namespace StudentInfoSystemApp.Presentation.Controllers
@@ -29,6 +30,11 @@ namespace StudentInfoSystemApp.Presentation.Controllers
         public async Task<IActionResult> Create([FromForm] DepartmentCreateDTO departmentCreateDTO)
         {
             return Ok(await _departmentService.CreateAsync(departmentCreateDTO));
+        }
+        [HttpDelete("id")]
+        public async Task<IActionResult> DeleteAsync(int? id)
+        {
+            return Ok(await _departmentService.DeleteAsync(id));
         }
     }
 }

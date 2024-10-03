@@ -109,5 +109,21 @@ namespace StudentInfoSystemApp.Application.Implementations
             //Returning the ID of the created entity
             return instructor.ID;
         }
+        public async Task<bool> DeleteAsync(int? id)
+        {
+            //Checking if requested ID is mentioned
+            if (id is null) throw new CustomException(400, "ID", "ID cannot be empty");
+
+            //Checking if an Instructor with requested ID exists in the database
+            var existingInstructor = _studentInfoSystemContext.Instructors.SingleOrDefault(a => a.ID == id);
+            if (existingInstructor == null) throw new CustomException(400, "ID", $"An instructor with ID of: '{id}' not found in the database");
+
+            //Deleting the requested attendance
+            _studentInfoSystemContext.Instructors.Remove(existingInstructor);
+            await _studentInfoSystemContext.SaveChangesAsync();
+
+            //Returning true if delete successful
+            return true;
+        }
     }
 }

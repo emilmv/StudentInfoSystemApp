@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 using StudentInfoSystemApp.Application.DTOs.AttendanceDTOs;
 using StudentInfoSystemApp.Application.DTOs.PaginationDTOs;
 using StudentInfoSystemApp.Application.Exceptions;
@@ -100,6 +102,22 @@ namespace StudentInfoSystemApp.Application.Implementations
 
             //Returning the ID of the created entity
             return attendance.ID;
+        }
+        public async Task<bool>DeleteAsync(int? id)
+        {
+            //Checking if requested ID is mentioned
+            if (id is null) throw new CustomException(400, "ID", "ID cannot be empty");
+
+            //Checking if an Attendance with requested ID exists in the database
+            var existingAttendance=_studentInfoSystemContext.Attendances.SingleOrDefault(a => a.ID == id);
+            if (existingAttendance == null) throw new CustomException(400, "ID", $"An attendance with ID of: '{id}' not found in the database");
+
+            //Deleting the requested attendance
+            _studentInfoSystemContext.Attendances.Remove(existingAttendance);
+            await _studentInfoSystemContext.SaveChangesAsync();
+
+            //Returning true if delete successful
+            return true;
         }
     }
 }
