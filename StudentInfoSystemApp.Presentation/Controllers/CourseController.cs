@@ -16,9 +16,9 @@ namespace StudentInfoSystemApp.Presentation.Controllers
         }
 
         [HttpGet("")]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get([FromQuery]int page = 1, [FromQuery]string searchInput="")
         {
-            return Ok(await _courseService.GetAllAsync());
+            return Ok(await _courseService.GetAllAsync(page,searchInput));
         }
         [HttpGet("id")]
         public async Task<IActionResult> Get(int? id)
@@ -26,7 +26,7 @@ namespace StudentInfoSystemApp.Presentation.Controllers
             return Ok(await _courseService.GetByIdAsync(id));
         }
         [HttpPost("")]
-        public async Task<IActionResult> Create([FromBody] CourseCreateDTO courseCreateDTO)
+        public async Task<IActionResult> Create([FromForm] CourseCreateDTO courseCreateDTO)
         {
             return Ok(await _courseService.CreateAsync(courseCreateDTO));
         }

@@ -27,7 +27,9 @@ namespace StudentInfoSystemApp.Application.MapProfiles
                 .ForMember(d=>d.AttendanceDate,map=>map.MapFrom(s=>s.AttendanceDate.ToShortDateString()));
 
             //Map for Create DTO
-            CreateMap<EnrollmentCreateDTO, Enrollment>();
+            CreateMap<EnrollmentCreateDTO, Enrollment>()
+                .ForMember(d => d.Grade, map => map.MapFrom(s => s.Grade.FirstCharToUpper()))
+                .ForMember(d => d.Semester, map => map.MapFrom(s => s.Semester.FirstCharToUpper()));
         }
     }
 }

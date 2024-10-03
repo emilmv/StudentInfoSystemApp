@@ -15,9 +15,9 @@ namespace StudentInfoSystemApp.Presentation.Controllers
             _enrollmentService = enrollmentSealService;
         }
         [HttpGet("")]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get([FromQuery] int page = 1, [FromQuery] string searchInput = "")
         {
-            return Ok(await _enrollmentService.GetAllAsync());
+            return Ok(await _enrollmentService.GetAllAsync(page,searchInput));
         }
         [HttpGet("id")]
         public async Task<IActionResult> Get(int? id)
@@ -25,7 +25,7 @@ namespace StudentInfoSystemApp.Presentation.Controllers
             return Ok(await _enrollmentService.GetByIdAsync(id));
         }
         [HttpPost("")]
-        public async Task<IActionResult> Create([FromBody] EnrollmentCreateDTO enrollmentCreateDTO)
+        public async Task<IActionResult> Create([FromForm] EnrollmentCreateDTO enrollmentCreateDTO)
         {
             return Ok(await _enrollmentService.CreateAsync(enrollmentCreateDTO));
         }

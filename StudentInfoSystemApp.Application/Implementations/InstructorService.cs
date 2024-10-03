@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using StudentInfoSystemApp.Application.DTOs.InstructorDTOs;
 using StudentInfoSystemApp.Application.Exceptions;
 using StudentInfoSystemApp.Application.Interfaces;
+using StudentInfoSystemApp.Core.Entities;
 using StudentInfoSystemApp.DataAccess.Data;
 
 namespace StudentInfoSystemApp.Application.Implementations
@@ -18,14 +19,56 @@ namespace StudentInfoSystemApp.Application.Implementations
             _mapper = mapper;
         }
 
-        public async Task<List<InstructorReturnDTO>> GetAllAsync()
+        public async Task<InstructorListDTO> GetAllAsync(int page = 1, string searchInput = "")
         {
-            return _mapper.Map<List<InstructorReturnDTO>>(await _studentInfoSystemContext
+            //Extracting query to not overload requests
+            var query = _studentInfoSystemContext
                 .Instructors
                 .Include(i => i.Department)
                 .Include(i => i.Schedules)
-                .ThenInclude(ii=>ii.Course)
-                .ToListAsync());
+                .ThenInclude(ii => ii.Course)
+                .AsQueryable();
+
+            //Search logic
+            if (!string.IsNullOrWhiteSpace(searchInput))
+            {
+                if (DateTime.TryParseExact(searchInput.Trim().ToLower(), "dd/MM/yyyy", null, System.Globalization.DateTimeStyles.None, out var searchDate))
+                {
+                    query = query.Where(i => i.HireDate.Date == searchDate.Date);
+                }
+                else
+                {
+                    searchInput = searchInput.Trim().ToLower();
+                    query = query.Where(i =>
+                        (i.FirstName != null && i.FirstName.Trim().ToLower().Contains(searchInput)) ||
+                        (i.LastName != null && i.LastName.Trim().ToLower().Contains(searchInput)) ||
+                        ((i.FirstName ?? "") + " " + (i.LastName ?? "")).ToLower().Contains(searchInput) ||
+                        (i.Email != null && i.Email.Trim().ToLower().Contains(searchInput)) ||
+                        (i.PhoneNumber != null && i.PhoneNumber.Trim().ToLower().Contains(searchInput)) ||
+                        (i.Department != null &&
+                            (i.Department.DepartmentName != null &&
+                             i.Department.DepartmentName.Trim().ToLower().Contains(searchInput))) ||
+                        (i.Schedules.Any(s => s.ClassTime != null && s.ClassTime.Trim().ToLower().Contains(searchInput)) ||
+                         i.Schedules.Any(s => s.Semester != null && s.Semester.Trim().ToLower().Contains(searchInput)) ||
+                         i.Schedules.Any(s => s.Classroom != null && s.Classroom.Trim().ToLower().Contains(searchInput)) ||
+                         i.Schedules.Any(s => s.Course.CourseName != null && s.Course.CourseName.Trim().ToLower().Contains(searchInput)))
+                    );
+                }
+            }
+
+            var datas = await query
+               .Skip((page - 1) * 2)
+               .Take(2)
+               .ToListAsync();
+
+            var totalCount = await query.CountAsync();
+
+            InstructorListDTO instructorListDTO = new();
+            instructorListDTO.TotalCount = totalCount;
+            instructorListDTO.CurrentPage = page;
+            instructorListDTO.Instructors = _mapper.Map<List<InstructorReturnDTO>>(datas);
+
+            return instructorListDTO;
         }
 
         public async Task<InstructorReturnDTO> GetByIdAsync(int? id)
@@ -35,15 +78,34 @@ namespace StudentInfoSystemApp.Application.Implementations
                 .Instructors
                 .Include(i => i.Department)
                 .Include(i => i.Schedules)
-                .ThenInclude(ii=>ii.Course)
+                .ThenInclude(ii => ii.Course)
                 .FirstOrDefaultAsync(d => d.ID == id);
             if (instructor is null) throw new CustomException(400, "ID", $"Instructor with ID of:'{id}'not found in the database");
             return _mapper.Map<InstructorReturnDTO>(instructor);
         }
 
-        public async Task<int> CreateAsync(InstructorCreateDTO ınstructorCreateDTO)
+        public async Task<int> CreateAsync(InstructorCreateDTO instructorCreateDTO)
         {
-            throw new NotImplementedException();
+            //Extracting query into a variable not to use 2 requests in 1 method
+            var query = _studentInfoSystemContext.Instructors;
+
+            //Checking if Instructor with same mail address exists in the database
+            var existingInstructor = await query.SingleOrDefaultAsync(i => i.Email == instructorCreateDTO.Email);
+            if (existingInstructor != null) throw new CustomException(400, "Email", $"An instructor with maill address of: '{instructorCreateDTO.Email}' already exists in the database.");
+
+            //Checking if Department exists in the database
+            var existingDepartment = await _studentInfoSystemContext.Departments.SingleOrDefaultAsync(d => d.ID == instructorCreateDTO.DepartmentID);
+            if (existingDepartment is null) throw new CustomException(400, "Department ID", $"Department with ID of: '{instructorCreateDTO.DepartmentID}' not found in the database.");
+
+            //Mapping DTO to an object
+            Instructor instructor = _mapper.Map<Instructor>(instructorCreateDTO);
+
+            //Adding the entity to the database
+            await _studentInfoSystemContext.Instructors.AddAsync(instructor);
+            await _studentInfoSystemContext.SaveChangesAsync();
+
+            //Returning the ID of the created entity
+            return instructor.ID;
         }
     }
 }

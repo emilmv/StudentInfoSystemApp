@@ -1,4 +1,4 @@
-﻿public static class StringExtensions
+﻿public static class StringExtension
 {
     public static string FirstCharToUpper(this string input) =>
         input switch

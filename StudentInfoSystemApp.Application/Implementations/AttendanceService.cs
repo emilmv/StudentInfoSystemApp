@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using StudentInfoSystemApp.Application.DTOs.AttendanceDTOs;
 using StudentInfoSystemApp.Application.Exceptions;
@@ -18,13 +19,41 @@ namespace StudentInfoSystemApp.Application.Implementations
             _mapper = mapper;
         }
 
-        public async Task<List<AttendanceReturnDTO>> GetAllAsync()
+        public async Task<AttendanceListDTO> GetAllAsync(int page=1,string searchInput ="")
         {
-            return _mapper.Map<List<AttendanceReturnDTO>>(await _studentInfoSystemContext
-                .Attendances
+            //Extracting query to not overload requests
+            var query = _studentInfoSystemContext.Attendances
                 .Include(a => a.Enrollment)
                 .ThenInclude(e => e.Student)
-                .ToListAsync());
+                .AsQueryable();
+
+            //Search logic
+            if (!string.IsNullOrWhiteSpace(searchInput.Trim().ToLower()))
+            {
+                var dateFormat = "dd/MM/yyyy";
+                if (DateTime.TryParseExact(searchInput.Trim().ToLower(), dateFormat, null, System.Globalization.DateTimeStyles.None, out var searchDate))
+                {
+                    query = query.Where(a => a.AttendanceDate.Date == searchDate.Date);
+                }
+                else
+                {
+                    throw new CustomException(400,"Date Format","Invalid date format. Please use DD/MM/YYYY.");
+                }
+            }
+
+            var datas=await query
+                .Skip((page - 1) *2)
+                .Take(2)
+                .ToListAsync();
+
+            var totalCount=await query.CountAsync();
+
+            AttendanceListDTO AttendanceListDTO = new();
+            AttendanceListDTO.TotalCount = totalCount;
+            AttendanceListDTO.CurrentPage = page;
+            AttendanceListDTO.Attendances = _mapper.Map<List<AttendanceReturnDTO>>(datas);
+
+            return AttendanceListDTO;
         }
 
         public async Task<AttendanceReturnDTO> GetByIdAsync(int? id)
@@ -63,7 +92,6 @@ namespace StudentInfoSystemApp.Application.Implementations
 
             //Mapping DTO to Object
             Attendance attendance = _mapper.Map<Attendance>(attendanceCreateDTO);
-            attendance.Status = attendance.Status.FirstCharToUpper();
 
             //Adding entity to the database
             await _studentInfoSystemContext.Attendances.AddAsync(attendance);

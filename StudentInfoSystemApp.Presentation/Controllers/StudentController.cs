@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using StudentInfoSystemApp.Application.DTOs.StudentDTOs;
+using StudentInfoSystemApp.Application.Implementations;
 using StudentInfoSystemApp.Application.Interfaces;
 
 namespace StudentInfoSystemApp.Presentation.Controllers
@@ -15,14 +17,19 @@ namespace StudentInfoSystemApp.Presentation.Controllers
         }
 
         [HttpGet("")]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get([FromQuery] int page = 1, [FromQuery] string searchInput = "")
         {
-            return Ok(await _studentService.GetAllAsync());
+            return Ok(await _studentService.GetAllAsync(page, searchInput));
         }
         [HttpGet("id")]
         public async Task<IActionResult> Get(int? id)
         {
             return Ok(await _studentService.GetByIdAsync(id));
+        }
+        [HttpPost("")]
+        public async Task<IActionResult> Create([FromForm] StudentCreateDTO studentCreateDTO)
+        {
+            return Ok(await _studentService.CreateAsync(studentCreateDTO));
         }
     }
 }

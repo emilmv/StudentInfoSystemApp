@@ -18,14 +18,38 @@ namespace StudentInfoSystemApp.Application.Implementations
             _mapper = mapper;
         }
 
-        public async Task<List<CourseReturnDTO>> GetAllAsync()
+        public async Task<CourseListDTO> GetAllAsync(int page = 1, string searchInput = "")
         {
-            return _mapper.Map<List<CourseReturnDTO>>(await _studentInfoSystemContext
-                .Courses
+            //Extracting query to not overload requests
+            var query = _studentInfoSystemContext.Courses
                 .Include(c => c.Program)
                 .Include(c => c.Enrollments)
                 .Include(c => c.Schedules)
-                .ToListAsync());
+                .AsQueryable();
+
+            //Search logic
+            if (!string.IsNullOrWhiteSpace(searchInput))
+            {
+                query = query.Where(c =>
+                    c.CourseName.ToLower().Contains(searchInput.ToLower()) ||
+                    c.CourseCode.ToLower().Contains(searchInput.ToLower()) ||
+                    c.Description.ToLower().Contains(searchInput.ToLower())
+                );
+            }
+
+            var datas = await query
+                .Skip((page - 1) * 2)
+                .Take(2)
+                .ToListAsync();
+
+            var totalCount = await query.CountAsync();
+
+            CourseListDTO courseListDTO = new();
+            courseListDTO.TotalCount = totalCount;
+            courseListDTO.CurrentPage = page;
+            courseListDTO.Courses=_mapper.Map<List<CourseReturnDTO>>(datas);
+
+            return courseListDTO;
         }
 
         public async Task<CourseReturnDTO> GetByIdAsync(int? id)

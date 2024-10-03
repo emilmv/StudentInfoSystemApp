@@ -1,10 +1,12 @@
-﻿using StudentInfoSystemApp.Application.DTOs.StudentDTOs;
+﻿using StudentInfoSystemApp.Application.DTOs.ScheduleDTOs;
+using StudentInfoSystemApp.Application.DTOs.StudentDTOs;
 
 namespace StudentInfoSystemApp.Application.Interfaces
 {
     public interface IStudentService
     {
-        Task<List<StudentReturnDTO>> GetAllAsync();
+        Task<StudentListDTO> GetAllAsync(int page = 1, string searchInput = "");
         Task<StudentReturnDTO> GetByIdAsync(int? id);
+        Task<int> CreateAsync(StudentCreateDTO studentCreateDTO);
     }
 }

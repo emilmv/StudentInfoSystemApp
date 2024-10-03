@@ -16,9 +16,9 @@ namespace StudentInfoSystemApp.Presentation.Controllers
         }
 
         [HttpGet("")]
-        public async Task<IActionResult> Get()
+        public async Task<IActionResult> Get([FromQuery]int page = 1, [FromQuery]string searchInput="")
         {
-            return Ok(await _attendanceService.GetAllAsync());
+            return Ok(await _attendanceService.GetAllAsync(page,searchInput));
         }
         [HttpGet("id")]
         public async Task<IActionResult> Get(int? id)
@@ -26,7 +26,7 @@ namespace StudentInfoSystemApp.Presentation.Controllers
             return Ok(await _attendanceService.GetByIdAsync(id));
         }
         [HttpPost("")]
-        public async Task<IActionResult>Create([FromBody]AttendanceCreateDTO attendanceCreateDTO)
+        public async Task<IActionResult>Create([FromForm]AttendanceCreateDTO attendanceCreateDTO)
         {
             return Ok(await _attendanceService.CreateAsync(attendanceCreateDTO));
         }

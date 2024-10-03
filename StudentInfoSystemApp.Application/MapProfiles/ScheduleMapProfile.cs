@@ -8,9 +8,15 @@ namespace StudentInfoSystemApp.Application.MapProfiles
     {
         public ScheduleMapProfile()
         {
+            //Map for ReturnDTO
             CreateMap<Schedule,ScheduleReturnDTO>();
             CreateMap<Course,CourseInScheduleReturnDTO>();
             CreateMap<Instructor, InstructorInScheduleReturnDTO>();
+
+            //Map for CreateDTO
+            CreateMap<ScheduleCreateDTO, Schedule>()
+                .ForMember(d => d.Semester, map => map.MapFrom(s => s.Semester.FirstCharToUpper()))
+                .ForMember(d => d.Classroom, map => map.MapFrom(s => s.Classroom.FirstCharToUpper()));
         }
     }
 }

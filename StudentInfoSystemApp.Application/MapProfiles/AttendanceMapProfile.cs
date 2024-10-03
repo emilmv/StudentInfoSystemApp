@@ -14,7 +14,8 @@ namespace StudentInfoSystemApp.Application.MapProfiles
                 .ForMember(d => d.StudentFullName,map=>map.MapFrom(s=>s.Student.FirstName+" "+s.Student.LastName));
 
             //Create DTO
-            CreateMap<AttendanceCreateDTO, Attendance>();
+            CreateMap<AttendanceCreateDTO, Attendance>()
+                .ForMember(d => d.Status, map => map.MapFrom(s => s.Status.FirstCharToUpper()));
         }
     }
 }
