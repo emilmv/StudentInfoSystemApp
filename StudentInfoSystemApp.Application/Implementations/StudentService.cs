@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using StudentInfoSystemApp.Application.DTOs.InstructorDTOs;
+using StudentInfoSystemApp.Application.DTOs.PaginationDTOs;
 using StudentInfoSystemApp.Application.DTOs.StudentDTOs;
 using StudentInfoSystemApp.Application.Exceptions;
 using StudentInfoSystemApp.Application.Interfaces;
@@ -19,7 +19,7 @@ namespace StudentInfoSystemApp.Application.Implementations
             _mapper = mapper;
         }
 
-        public async Task<StudentListDTO> GetAllAsync(int page = 1, string searchInput = "")
+        public async Task<PaginationListDTO<StudentReturnDTO>> GetAllAsync(int page = 1, string searchInput = "")
         {
             //Extracting query to not overload requests
             var query = _studentInfoSystemContext
@@ -63,12 +63,12 @@ namespace StudentInfoSystemApp.Application.Implementations
 
             var totalCount = await query.CountAsync();
 
-            StudentListDTO studentListDTO = new();
-            studentListDTO.TotalCount = totalCount;
-            studentListDTO.CurrentPage = page;
-            studentListDTO.Students = _mapper.Map<List<StudentReturnDTO>>(datas);
-
-            return studentListDTO;
+            return new PaginationListDTO<StudentReturnDTO>
+            {
+                TotalCount = totalCount,
+                CurrentPage = page,
+                Objects = _mapper.Map<List<StudentReturnDTO>>(datas)
+            };
         }
         public async Task<StudentReturnDTO> GetByIdAsync(int? id)
         {
