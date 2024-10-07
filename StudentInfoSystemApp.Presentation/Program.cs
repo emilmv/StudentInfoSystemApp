@@ -1,13 +1,4 @@
-using FluentValidation;
-using FluentValidation.AspNetCore;
-using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using StudentInfoSystemApp.Application.DTOs.AttendanceDTOs;
-using StudentInfoSystemApp.Application.Implementations;
-using StudentInfoSystemApp.Application.Interfaces;
-using StudentInfoSystemApp.Application.MapProfiles;
-using StudentInfoSystemApp.DataAccess.Data;
+using StudentInfoSystemApp.Presentation.Extensions;
 using StudentInfoSystemApp.Presentation.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,44 +6,15 @@ var configuration = builder.Configuration;
 
 // Add services to the container.
 
-builder.Services.AddControllers().ConfigureApiBehaviorOptions(opt =>
-{
-    opt.InvalidModelStateResponseFactory = context =>
-    {
-        var errors = context.ModelState.Where(e => e.Value?.Errors.Count > 0)
-        .Select(x => new Dictionary<string, string>() { { x.Key, x.Value.Errors.First().ErrorMessage } });
-        return new BadRequestObjectResult(new { message = "Something went wrong, please check errors.", errors });
-    };
-});
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddDbContext<StudentInfoSystemContext>(options =>
-{
-    options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
-});
-builder.Services.AddScoped<IAttendanceService, AttendanceService>();
-builder.Services.AddScoped<ICourseService, CourseService>();
-builder.Services.AddScoped<IDepartmentService, DepartmentService>();
-builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
-builder.Services.AddScoped<IInstructorService, InstructorService>();
-builder.Services.AddScoped<IProgramService, ProgramService>();
-builder.Services.AddScoped<IScheduleService, ScheduleService>();
-builder.Services.AddScoped<IStudentService, StudentService>();
-builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddFluentValidationClientsideAdapters();
-builder.Services.AddValidatorsFromAssemblyContaining<AttendanceCreateDTO>();
-builder.Services.AddFluentValidationRulesToSwagger();
+builder.Services.AddCustomServices(configuration);
+builder.Services.AddCustomValidation();
+builder.Services.AddCustomSwagger();
+builder.Services.AddCustomAutoMapper();
+builder.Services.AddCustomApiBehavior();
+builder.Services.AddCustomIdentity();
+builder.Services.AddJWTAuthentication(configuration);
+builder.Services.addCustomSettings(configuration);
 builder.Services.AddHttpContextAccessor();
-
-builder.Services.AddAutoMapper(typeof(AttendanceMapProfile).Assembly);
-
-builder.Services.AddAutoMapper(opt =>
-{
-    opt.AddProfile(new StudentMapProfile(new HttpContextAccessor()));
-    opt.AddProfile(new EnrollmentMapProfile(new HttpContextAccessor()));
-    opt.AddProfile(new InstructorMapProfile(new HttpContextAccessor()));
-});
 
 var app = builder.Build();
 
@@ -69,6 +31,8 @@ if (app.Environment.IsDevelopment())
 app.UseStaticFiles();
 
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

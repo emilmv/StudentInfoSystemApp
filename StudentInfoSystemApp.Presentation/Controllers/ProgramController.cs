@@ -21,7 +21,7 @@ namespace StudentInfoSystemApp.Presentation.Controllers
         {
             return Ok(await _programService.GetAllAsync(page, searchInput));
         }
-        [HttpGet("id")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> Get(int? id)
         {
             return Ok(await _programService.GetByIdAsync(id));
@@ -31,7 +31,7 @@ namespace StudentInfoSystemApp.Presentation.Controllers
         {
             return Ok(await _programService.CreateAsync(programCreateDTO));
         }
-        [HttpDelete("id")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(int? id)
         {
             return Ok(await _programService.DeleteAsync(id));

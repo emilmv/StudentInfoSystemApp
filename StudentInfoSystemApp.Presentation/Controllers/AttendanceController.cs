@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using StudentInfoSystemApp.Application.DTOs.AttendanceDTOs;
 using StudentInfoSystemApp.Application.Interfaces;
 
@@ -20,7 +21,7 @@ namespace StudentInfoSystemApp.Presentation.Controllers
         {
             return Ok(await _attendanceService.GetAllAsync(page,searchInput));
         }
-        [HttpGet("id")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> Get(int? id)
         {
             return Ok(await _attendanceService.GetByIdAsync(id));
@@ -30,7 +31,7 @@ namespace StudentInfoSystemApp.Presentation.Controllers
         {
             return Ok(await _attendanceService.CreateAsync(attendanceCreateDTO));
         }
-        [HttpDelete("id")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult>DeleteAsync(int? id)
         {
             return Ok(await _attendanceService.DeleteAsync(id));

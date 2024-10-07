@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StudentInfoSystemApp.DataAccess.Data;
 
@@ -11,9 +12,11 @@ using StudentInfoSystemApp.DataAccess.Data;
 namespace StudentInfoSystemApp.DataAccess.Migrations
 {
     [DbContext(typeof(StudentInfoSystemContext))]
-    partial class StudentInfoSystemContextModelSnapshot : ModelSnapshot
+    [Migration("20241007095058_userAndUserRoleSeedAdded")]
+    partial class userAndUserRoleSeedAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -47,26 +50,6 @@ namespace StudentInfoSystemApp.DataAccess.Migrations
                         .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "0bf72365-10fe-4547-809c-df63370c89ef",
-                            Name = "Owner",
-                            NormalizedName = "OWNER"
-                        },
-                        new
-                        {
-                            Id = "6b5fb7b0-1fe8-4aba-85b7-87aea797b8c7",
-                            Name = "Admin",
-                            NormalizedName = "ADMİN"
-                        },
-                        new
-                        {
-                            Id = "7e2ad1b2-3dc1-4f24-b119-b7f9306468bf",
-                            Name = "User",
-                            NormalizedName = "USER"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -154,13 +137,6 @@ namespace StudentInfoSystemApp.DataAccess.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            UserId = "e5645657-a36d-4b49-a129-1110c2ab71c6",
-                            RoleId = "0bf72365-10fe-4547-809c-df63370c89ef"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
@@ -248,24 +224,6 @@ namespace StudentInfoSystemApp.DataAccess.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "e5645657-a36d-4b49-a129-1110c2ab71c6",
-                            AccessFailedCount = 0,
-                            ConcurrencyStamp = "9b6769b9-1135-44cd-84a6-7ea151abad5e",
-                            Email = "owner@example.com",
-                            EmailConfirmed = true,
-                            LockoutEnabled = false,
-                            NormalizedEmail = "OWNER@EXAMPLE.COM",
-                            NormalizedUserName = "OWNER",
-                            PasswordHash = "AQAAAAIAAYagAAAAENW51Mvapu8wvMgLZagxOseqKmYHbHwEtz3azIhDyqGg+tdfhkBysSPlk/sAZCbRTw==",
-                            PhoneNumberConfirmed = false,
-                            SecurityStamp = "e277140e-c1af-4f5c-9036-d9b71168fdc1",
-                            TwoFactorEnabled = false,
-                            UserName = "owner"
-                        });
                 });
 
             modelBuilder.Entity("StudentInfoSystemApp.Core.Entities.Attendance", b =>

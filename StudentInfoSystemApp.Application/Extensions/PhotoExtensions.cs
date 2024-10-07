@@ -2,7 +2,7 @@
 
 namespace StudentInfoSystemApp.Application.Extensions
 {
-    public static class PhotoExtension
+    public static class PhotoExtensions
     {
         public static string Save(this IFormFile photo,string firstName,string lastName, string root, string folder)
         {
