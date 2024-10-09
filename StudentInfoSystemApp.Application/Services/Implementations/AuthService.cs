@@ -65,20 +65,13 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
             //Assigning User role to registered person
             await _userManager.AddToRoleAsync(newUser, "User");
 
-            //Sending confirmation email
-            var token = await _userManager.GenerateEmailConfirmationTokenAsync(newUser);
-            var scheme = _httpContextAccessor.HttpContext.Request.Scheme;
-            var host = _httpContextAccessor.HttpContext.Request.Host.Value;
-            var confirmationLink = $"{scheme}://{host}/api/Auth/verify-email?email={newUser.Email}&token={Uri.EscapeDataString(token)}";
+            //Generate confirmation link
+            var confirmationLink = await _emailService.GenerateEmailConfirmationLinkAsync(newUser);
 
-            string body = string.Empty;
-            using (StreamReader streamReader = new("wwwroot/templates/emailVerificationTemplate.html"))
-            {
-                body = streamReader.ReadToEnd();
-            }
-            body = body.Replace("{{link}}", confirmationLink);
-            body = body.Replace("{{username}}", newUser.UserName);
+            //Generate email body
+            var body = await _emailService.GenerateVerificationEmailBodyAsync(confirmationLink, newUser.UserName);
 
+            //Send email
             _emailService.SendEmail(new List<string>() { newUser.Email }, "Email Verification", body);
 
             return "Registration successful. Please check your email to confirm.";
@@ -101,11 +94,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
 
             //If email is not confirmed
             if (!existingUser.EmailConfirmed)
-            {
                 throw new CustomException(400, "Email not confirmed", "Please confirm your email before logging in.");
-
-            }
-
 
             //Token generation
             var userRoles = await _userManager.GetRolesAsync(existingUser);
@@ -152,9 +141,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
             var user = await _userManager.FindByIdAsync(userId);
 
             if (user == null)
-            {
                 throw new CustomException(400, "UserNotFound", $"User with ID of: '{userId}' not found in the database.");
-            }
 
             var result = await _userManager.DeleteAsync(user);
 
@@ -171,9 +158,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
-            {
                 throw new CustomException(404, "UserNotFound", "The user does not exist.");
-            }
 
             var result = await _userManager.ConfirmEmailAsync(user, token);
             if (!result.Succeeded)
@@ -181,6 +166,9 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
                 var errors = result.Errors.Select(e => new KeyValuePair<string, string>(e.Code, e.Description));
                 throw new CustomException(400, "EmailConfirmationFailed", "Failed to confirm email. Token is invalid or expired");
             }
+            //Expire the token
+            await _userManager.UpdateSecurityStampAsync(user);
+
             return "Email verification successful, you can close this window.";
         }
 
@@ -188,28 +176,16 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
         {
             var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
-            {
                 throw new CustomException(404, "UserNotFound", "User not found with the provided email.");
-            }
 
             if (user.EmailConfirmed)
-            {
                 throw new CustomException(400, "EmailAlreadyConfirmed", "Email is already confirmed. No need to resend the verification link.");
-            }
 
-            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var scheme = _httpContextAccessor.HttpContext.Request.Scheme;
-            var host = _httpContextAccessor.HttpContext.Request.Host.Value;
-            var confirmationLink = $"{scheme}://{host}/api/Auth/verify-email?email={user.Email}&token={Uri.EscapeDataString(token)}";
+            //Generate confirmation link
+            var confirmationLink = await _emailService.GenerateEmailConfirmationLinkAsync(user);
 
-            string body = string.Empty;
-            using (StreamReader streamReader = new StreamReader("wwwroot/templates/emailVerificationTemplate.html"))
-            {
-                body = streamReader.ReadToEnd();
-            }
-
-            body = body.Replace("{{username}}", user.UserName);
-            body = body.Replace("{{link}}", confirmationLink);
+            //Generate email body
+            var body = await _emailService.GenerateVerificationEmailBodyAsync(confirmationLink, user.UserName);
 
             // Send email
             _emailService.SendEmail(new List<string> { user.Email }, "Email Verification", body);
@@ -220,24 +196,15 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
         public async Task<string> SendPasswordResetEmailAsync(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
+
             if (user == null)
-            {
                 throw new CustomException(400, "UserNotFound", "User with this email does not exist.");
-            }
 
-            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var scheme = _httpContextAccessor.HttpContext.Request.Scheme;
-            var host = _httpContextAccessor.HttpContext.Request.Host.Value;
-            var resetLink = $"{scheme}://{host}/api/auth/reset-password?email={email}&token={token}";
+            //Generate reset link
+            var resetLink = await _emailService.GenerateResetPasswordLinkAsync(user);
 
-            string body = string.Empty;
-            using (StreamReader streamReader = new StreamReader("wwwroot/templates/resetPasswordTemplate.html"))
-            {
-                body = streamReader.ReadToEnd();
-            }
-
-            body = body.Replace("{{username}}", user.UserName);
-            body = body.Replace("{{resetLink}}", resetLink);
+            //Generate email body
+            var body = _emailService.GenerateResetPasswordEmailBody(resetLink, user.UserName);
 
             _emailService.SendEmail(new List<string> { user.Email }, "Password Reset", body);
 
