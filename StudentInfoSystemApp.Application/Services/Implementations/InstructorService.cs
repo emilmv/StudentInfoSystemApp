@@ -1,14 +1,13 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using StudentInfoSystemApp.Application.DTOs.EnrollmentDTOs;
 using StudentInfoSystemApp.Application.DTOs.InstructorDTOs;
 using StudentInfoSystemApp.Application.DTOs.PaginationDTOs;
 using StudentInfoSystemApp.Application.Exceptions;
-using StudentInfoSystemApp.Application.Interfaces;
+using StudentInfoSystemApp.Application.Services.Interfaces;
 using StudentInfoSystemApp.Core.Entities;
 using StudentInfoSystemApp.DataAccess.Data;
 
-namespace StudentInfoSystemApp.Application.Implementations
+namespace StudentInfoSystemApp.Application.Services.Implementations
 {
     public class InstructorService : IInstructorService
     {
@@ -42,18 +41,18 @@ namespace StudentInfoSystemApp.Application.Implementations
                 {
                     searchInput = searchInput.Trim().ToLower();
                     query = query.Where(i =>
-                        (i.FirstName != null && i.FirstName.Trim().ToLower().Contains(searchInput)) ||
-                        (i.LastName != null && i.LastName.Trim().ToLower().Contains(searchInput)) ||
+                        i.FirstName != null && i.FirstName.Trim().ToLower().Contains(searchInput) ||
+                        i.LastName != null && i.LastName.Trim().ToLower().Contains(searchInput) ||
                         ((i.FirstName ?? "") + " " + (i.LastName ?? "")).ToLower().Contains(searchInput) ||
-                        (i.Email != null && i.Email.Trim().ToLower().Contains(searchInput)) ||
-                        (i.PhoneNumber != null && i.PhoneNumber.Trim().ToLower().Contains(searchInput)) ||
-                        (i.Department != null &&
-                            (i.Department.DepartmentName != null &&
-                             i.Department.DepartmentName.Trim().ToLower().Contains(searchInput))) ||
-                        (i.Schedules.Any(s => s.ClassTime != null && s.ClassTime.Trim().ToLower().Contains(searchInput)) ||
+                        i.Email != null && i.Email.Trim().ToLower().Contains(searchInput) ||
+                        i.PhoneNumber != null && i.PhoneNumber.Trim().ToLower().Contains(searchInput) ||
+                        i.Department != null &&
+                            i.Department.DepartmentName != null &&
+                             i.Department.DepartmentName.Trim().ToLower().Contains(searchInput) ||
+                        i.Schedules.Any(s => s.ClassTime != null && s.ClassTime.Trim().ToLower().Contains(searchInput)) ||
                          i.Schedules.Any(s => s.Semester != null && s.Semester.Trim().ToLower().Contains(searchInput)) ||
                          i.Schedules.Any(s => s.Classroom != null && s.Classroom.Trim().ToLower().Contains(searchInput)) ||
-                         i.Schedules.Any(s => s.Course.CourseName != null && s.Course.CourseName.Trim().ToLower().Contains(searchInput)))
+                         i.Schedules.Any(s => s.Course.CourseName != null && s.Course.CourseName.Trim().ToLower().Contains(searchInput))
                     );
                 }
             }

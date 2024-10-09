@@ -1,7 +1,7 @@
 ﻿using StudentInfoSystemApp.Application.DTOs.CourseDTOs;
 using StudentInfoSystemApp.Application.DTOs.PaginationDTOs;
 
-namespace StudentInfoSystemApp.Application.Interfaces
+namespace StudentInfoSystemApp.Application.Services.Interfaces
 {
     public interface ICourseService
     {

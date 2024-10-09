@@ -1,5 +1,5 @@
-﻿using FluentValidation.AspNetCore;
-using FluentValidation;
+﻿using FluentValidation;
+using FluentValidation.AspNetCore;
 using MicroElements.Swashbuckle.FluentValidation.AspNetCore;
 using StudentInfoSystemApp.Application.DTOs.AttendanceDTOs;
 

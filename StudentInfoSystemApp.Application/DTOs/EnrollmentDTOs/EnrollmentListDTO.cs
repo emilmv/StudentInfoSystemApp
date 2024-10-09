@@ -1,6 +1,4 @@
-﻿using StudentInfoSystemApp.Application.DTOs.DepartmentDTOs;
-
-namespace StudentInfoSystemApp.Application.DTOs.EnrollmentDTOs
+﻿namespace StudentInfoSystemApp.Application.DTOs.EnrollmentDTOs
 {
     public class EnrollmentListDTO
     {

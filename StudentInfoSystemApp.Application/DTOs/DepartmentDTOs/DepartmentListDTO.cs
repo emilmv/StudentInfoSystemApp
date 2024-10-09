@@ -1,6 +1,4 @@
-﻿using StudentInfoSystemApp.Application.DTOs.CourseDTOs;
-
-namespace StudentInfoSystemApp.Application.DTOs.DepartmentDTOs
+﻿namespace StudentInfoSystemApp.Application.DTOs.DepartmentDTOs
 {
     public class DepartmentListDTO
     {

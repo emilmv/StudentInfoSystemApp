@@ -1,6 +1,4 @@
-﻿using StudentInfoSystemApp.Core.Entities;
-
-namespace StudentInfoSystemApp.Application.DTOs.ScheduleDTOs
+﻿namespace StudentInfoSystemApp.Application.DTOs.ScheduleDTOs
 {
     public class ScheduleReturnDTO
     {

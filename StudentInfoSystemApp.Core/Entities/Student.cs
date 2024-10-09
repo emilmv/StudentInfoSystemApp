@@ -12,7 +12,7 @@
         public string? Address { get; set; }
         public DateTime EnrollmentDate { get; set; }
         public string? Status { get; set; }
-        public string? Photo {  get; set; }
+        public string? Photo { get; set; }
         //Relations below
         public int ProgramID { get; set; }
         public Program? Program { get; set; }

@@ -4,11 +4,11 @@ using StudentInfoSystemApp.Core.Entities;
 
 namespace StudentInfoSystemApp.Application.MapProfiles
 {
-    public class UserMapProfile:Profile
+    public class UserMapProfile : Profile
     {
         public UserMapProfile()
         {
-            CreateMap<ApplicationUser,UserReturnDTO>();
+            CreateMap<ApplicationUser, UserReturnDTO>();
         }
     }
 }

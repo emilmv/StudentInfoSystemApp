@@ -42,13 +42,13 @@ namespace StudentInfoSystemApp.DataAccess.Configurations
                 .HasDefaultValue("Active")
                 .HasMaxLength(20);
 
-            builder.Property(s=>s.Photo)
+            builder.Property(s => s.Photo)
                 .IsRequired();
 
             builder.HasOne(s => s.Program)
                 .WithMany(p => p.Students)
                 .HasForeignKey(s => s.ProgramID);
-                //.OnDelete(DeleteBehavior.Cascade);
+            //.OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

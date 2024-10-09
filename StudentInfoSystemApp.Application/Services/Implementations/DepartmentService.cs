@@ -1,14 +1,13 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using StudentInfoSystemApp.Application.DTOs.CourseDTOs;
 using StudentInfoSystemApp.Application.DTOs.DepartmentDTOs;
 using StudentInfoSystemApp.Application.DTOs.PaginationDTOs;
 using StudentInfoSystemApp.Application.Exceptions;
-using StudentInfoSystemApp.Application.Interfaces;
+using StudentInfoSystemApp.Application.Services.Interfaces;
 using StudentInfoSystemApp.Core.Entities;
 using StudentInfoSystemApp.DataAccess.Data;
 
-namespace StudentInfoSystemApp.Application.Implementations
+namespace StudentInfoSystemApp.Application.Services.Implementations
 {
     public class DepartmentService : IDepartmentService
     {

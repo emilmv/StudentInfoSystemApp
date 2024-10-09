@@ -1,14 +1,13 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using StudentInfoSystemApp.Application.DTOs.InstructorDTOs;
 using StudentInfoSystemApp.Application.DTOs.PaginationDTOs;
 using StudentInfoSystemApp.Application.DTOs.ProgramDTOs;
 using StudentInfoSystemApp.Application.Exceptions;
-using StudentInfoSystemApp.Application.Interfaces;
+using StudentInfoSystemApp.Application.Services.Interfaces;
 using StudentInfoSystemApp.Core.Entities;
 using StudentInfoSystemApp.DataAccess.Data;
 
-namespace StudentInfoSystemApp.Application.Implementations
+namespace StudentInfoSystemApp.Application.Services.Implementations
 {
     public class ProgramService : IProgramService
     {
@@ -35,12 +34,12 @@ namespace StudentInfoSystemApp.Application.Implementations
                 searchInput = searchInput.ToLower();
 
                 query = query.Where(p =>
-                    (p.RequiredCredits.ToString()==searchInput)||
-                    (p.ProgramName != null && p.ProgramName.ToLower().Contains(searchInput)) ||
-                    (p.Description != null && p.Description.ToLower().Contains(searchInput)) ||
+                    p.RequiredCredits.ToString() == searchInput ||
+                    p.ProgramName != null && p.ProgramName.ToLower().Contains(searchInput) ||
+                    p.Description != null && p.Description.ToLower().Contains(searchInput) ||
                     p.Students.Any(s =>
-                    (s.FirstName != null && s.FirstName.ToLower().Contains(searchInput)) ||
-                    (s.LastName != null && s.LastName.ToLower().Contains(searchInput)) ||
+                    s.FirstName != null && s.FirstName.ToLower().Contains(searchInput) ||
+                    s.LastName != null && s.LastName.ToLower().Contains(searchInput) ||
                         ((s.FirstName ?? string.Empty) + " " + (s.LastName ?? string.Empty)).ToLower().Contains(searchInput)
                     )
                 );

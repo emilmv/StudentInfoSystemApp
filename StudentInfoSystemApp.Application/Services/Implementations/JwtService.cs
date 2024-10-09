@@ -1,14 +1,13 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using StudentInfoSystemApp.Application.Interfaces;
+using StudentInfoSystemApp.Application.Services.Interfaces;
 using StudentInfoSystemApp.Application.Settings;
 using StudentInfoSystemApp.Core.Entities;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace StudentInfoSystemApp.Application.Implementations
+namespace StudentInfoSystemApp.Application.Services.Implementations
 {
     public class JwtService : IJwtService
     {
@@ -22,7 +21,7 @@ namespace StudentInfoSystemApp.Application.Implementations
         public string GenerateToken(ApplicationUser user, List<string> userRoles)
         {
             var credentials = new SigningCredentials(
-                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey)), 
+                new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey)),
                 SecurityAlgorithms.HmacSha256);
 
             var claims = new List<Claim>

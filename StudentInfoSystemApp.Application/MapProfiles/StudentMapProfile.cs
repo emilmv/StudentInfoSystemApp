@@ -1,13 +1,12 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
-using StudentInfoSystemApp.Application.DTOs.InstructorDTOs;
 using StudentInfoSystemApp.Application.DTOs.StudentDTOs;
 using StudentInfoSystemApp.Application.Extensions;
 using StudentInfoSystemApp.Core.Entities;
 
 namespace StudentInfoSystemApp.Application.MapProfiles
 {
-    public class StudentMapProfile:Profile
+    public class StudentMapProfile : Profile
     {
         public StudentMapProfile()
         {
@@ -24,7 +23,7 @@ namespace StudentInfoSystemApp.Application.MapProfiles
                 .ForMember(d => d.Photo, map => map.MapFrom(s => url + "images/" + s.Photo));
             CreateMap<Program, ProgramInStudentReturnDTO>();
             CreateMap<Enrollment, EnrollmentInStudentReturnDTO>()
-                .ForMember(d=>d.CourseRegistrationDate,map=>map.MapFrom(s=>s.EnrollmentDate.ToShortDateString()));
+                .ForMember(d => d.CourseRegistrationDate, map => map.MapFrom(s => s.EnrollmentDate.ToShortDateString()));
 
             //Map for CreateDTO
             CreateMap<StudentCreateDTO, Student>()

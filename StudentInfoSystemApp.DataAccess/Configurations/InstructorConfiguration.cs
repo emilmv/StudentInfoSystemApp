@@ -37,7 +37,7 @@ namespace StudentInfoSystemApp.DataAccess.Configurations
             builder.HasMany(i => i.Schedules)
                 .WithOne(cs => cs.Instructor)
                 .HasForeignKey(cs => cs.InstructorID);
-               // .OnDelete(DeleteBehavior.Restrict);
+            // .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

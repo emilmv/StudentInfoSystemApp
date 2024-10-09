@@ -1,16 +1,13 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
 using StudentInfoSystemApp.Application.DTOs.AttendanceDTOs;
 using StudentInfoSystemApp.Application.DTOs.PaginationDTOs;
 using StudentInfoSystemApp.Application.Exceptions;
-using StudentInfoSystemApp.Application.Interfaces;
+using StudentInfoSystemApp.Application.Services.Interfaces;
 using StudentInfoSystemApp.Core.Entities;
 using StudentInfoSystemApp.DataAccess.Data;
 
-namespace StudentInfoSystemApp.Application.Implementations
+namespace StudentInfoSystemApp.Application.Services.Implementations
 {
     public class AttendanceService : IAttendanceService
     {
@@ -22,7 +19,7 @@ namespace StudentInfoSystemApp.Application.Implementations
             _mapper = mapper;
         }
 
-        public async Task<PaginationListDTO<AttendanceReturnDTO>> GetAllAsync(int page=1,string searchInput ="")
+        public async Task<PaginationListDTO<AttendanceReturnDTO>> GetAllAsync(int page = 1, string searchInput = "")
         {
             //Extracting query to not overload requests
             var query = _studentInfoSystemContext.Attendances
@@ -40,16 +37,16 @@ namespace StudentInfoSystemApp.Application.Implementations
                 }
                 else
                 {
-                    throw new CustomException(400,"Date Format","Invalid date format. Please use DD/MM/YYYY.");
+                    throw new CustomException(400, "Date Format", "Invalid date format. Please use DD/MM/YYYY.");
                 }
             }
 
-            var datas=await query
-                .Skip((page - 1) *2)
+            var datas = await query
+                .Skip((page - 1) * 2)
                 .Take(2)
                 .ToListAsync();
 
-            var totalCount=await query.CountAsync();
+            var totalCount = await query.CountAsync();
 
             return new PaginationListDTO<AttendanceReturnDTO>
             {
@@ -103,13 +100,13 @@ namespace StudentInfoSystemApp.Application.Implementations
             //Returning the ID of the created entity
             return attendance.ID;
         }
-        public async Task<bool>DeleteAsync(int? id)
+        public async Task<bool> DeleteAsync(int? id)
         {
             //Checking if requested ID is mentioned
             if (id is null) throw new CustomException(400, "ID", "ID cannot be empty");
 
             //Checking if an Attendance with requested ID exists in the database
-            var existingAttendance=_studentInfoSystemContext.Attendances.SingleOrDefault(a => a.ID == id);
+            var existingAttendance = _studentInfoSystemContext.Attendances.SingleOrDefault(a => a.ID == id);
             if (existingAttendance == null) throw new CustomException(400, "ID", $"An attendance with ID of: '{id}' not found in the database");
 
             //Deleting the requested attendance

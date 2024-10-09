@@ -9,11 +9,11 @@ namespace StudentInfoSystemApp.Presentation.Extensions
         {
             services.AddIdentity<ApplicationUser, IdentityRole>(opt =>
             {
-                opt.Password.RequireNonAlphanumeric=true;
+                opt.Password.RequireNonAlphanumeric = true;
                 opt.Password.RequiredLength = 8;
-                opt.Password.RequireUppercase=true;
-                opt.Password.RequireLowercase=true;
-                opt.Password.RequireDigit=true;
+                opt.Password.RequireUppercase = true;
+                opt.Password.RequireLowercase = true;
+                opt.Password.RequireDigit = true;
             }).AddEntityFrameworkStores<StudentInfoSystemContext>().AddDefaultTokenProviders();
 
             return services;

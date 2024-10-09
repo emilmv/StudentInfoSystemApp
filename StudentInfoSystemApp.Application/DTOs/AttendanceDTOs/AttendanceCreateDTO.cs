@@ -9,7 +9,7 @@ namespace StudentInfoSystemApp.Application.DTOs.AttendanceDTOs
         public int EnrollmentID { get; set; }
     }
     //Validator for AttendanceCreateDTO
-    public class AttendanceCreateDTOValidator:AbstractValidator<AttendanceCreateDTO>
+    public class AttendanceCreateDTOValidator : AbstractValidator<AttendanceCreateDTO>
     {
         public AttendanceCreateDTOValidator()
         {

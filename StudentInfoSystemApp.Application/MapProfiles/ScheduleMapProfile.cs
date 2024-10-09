@@ -4,13 +4,13 @@ using StudentInfoSystemApp.Core.Entities;
 
 namespace StudentInfoSystemApp.Application.MapProfiles
 {
-    public class ScheduleMapProfile:Profile
+    public class ScheduleMapProfile : Profile
     {
         public ScheduleMapProfile()
         {
             //Map for ReturnDTO
-            CreateMap<Schedule,ScheduleReturnDTO>();
-            CreateMap<Course,CourseInScheduleReturnDTO>();
+            CreateMap<Schedule, ScheduleReturnDTO>();
+            CreateMap<Course, CourseInScheduleReturnDTO>();
             CreateMap<Instructor, InstructorInScheduleReturnDTO>();
 
             //Map for CreateDTO

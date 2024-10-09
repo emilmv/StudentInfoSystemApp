@@ -1,6 +1,4 @@
 ﻿using FluentValidation;
-using Microsoft.AspNetCore.Http;
-using System.Linq;
 
 namespace StudentInfoSystemApp.Application.DTOs.ScheduleDTOs
 {

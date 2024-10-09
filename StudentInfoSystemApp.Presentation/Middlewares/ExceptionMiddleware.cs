@@ -22,7 +22,7 @@ namespace StudentInfoSystemApp.Presentation.Middlewares
                 context.Response.StatusCode = 500;
                 if (ex is CustomException customException)
                 {
-                    message ="Something went wrong. Please check errors.";
+                    message = "Something went wrong. Please check errors.";
                     errors = customException.Errors;
                     context.Response.StatusCode = customException.StatusCode;
                 }

@@ -53,6 +53,7 @@ namespace StudentInfoSystemApp.DataAccess.Data
                 {
                     UserName = "owner",
                     NormalizedUserName = "OWNER",
+                    FullName ="ExampleName ExampleSurname",
                     Email = "owner@example.com",
                     NormalizedEmail = "OWNER@EXAMPLE.COM",
                     PasswordHash = hasher.HashPassword(null, "DefaultPassword123!"),

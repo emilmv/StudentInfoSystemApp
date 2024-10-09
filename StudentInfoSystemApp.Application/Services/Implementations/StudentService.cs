@@ -3,11 +3,11 @@ using Microsoft.EntityFrameworkCore;
 using StudentInfoSystemApp.Application.DTOs.PaginationDTOs;
 using StudentInfoSystemApp.Application.DTOs.StudentDTOs;
 using StudentInfoSystemApp.Application.Exceptions;
-using StudentInfoSystemApp.Application.Interfaces;
+using StudentInfoSystemApp.Application.Services.Interfaces;
 using StudentInfoSystemApp.Core.Entities;
 using StudentInfoSystemApp.DataAccess.Data;
 
-namespace StudentInfoSystemApp.Application.Implementations
+namespace StudentInfoSystemApp.Application.Services.Implementations
 {
     public class StudentService : IStudentService
     {
@@ -41,17 +41,17 @@ namespace StudentInfoSystemApp.Application.Implementations
                 {
                     searchInput = searchInput.Trim().ToLower();
                     query = query.Where(s =>
-                                        (s.FirstName != null && s.FirstName.ToLower().Contains(searchInput)) ||
-                                        (s.LastName != null && s.LastName.ToLower().Contains(searchInput)) ||
+                                        s.FirstName != null && s.FirstName.ToLower().Contains(searchInput) ||
+                                        s.LastName != null && s.LastName.ToLower().Contains(searchInput) ||
                                         ((s.FirstName ?? string.Empty) + " " + (s.LastName ?? string.Empty)).ToLower().Contains(searchInput) ||
-                                        (s.Gender!=null&&s.Gender.Trim().ToLower().Contains(searchInput))||
-                                        (s.Email != null && s.Email.ToLower().Contains(searchInput)) ||
-                                        (s.PhoneNumber != null && s.PhoneNumber.ToLower().Contains(searchInput)) ||
-                                        (s.Address != null && s.Address.ToLower().Contains(searchInput)) ||
-                                        (s.Status != null && s.Status.ToLower().Contains(searchInput)) ||
-                                        (s.Program != null &&
+                                        s.Gender != null && s.Gender.Trim().ToLower().Contains(searchInput) ||
+                                        s.Email != null && s.Email.ToLower().Contains(searchInput) ||
+                                        s.PhoneNumber != null && s.PhoneNumber.ToLower().Contains(searchInput) ||
+                                        s.Address != null && s.Address.ToLower().Contains(searchInput) ||
+                                        s.Status != null && s.Status.ToLower().Contains(searchInput) ||
+                                        s.Program != null &&
                                          s.Program.ProgramName != null &&
-                                         s.Program.ProgramName.ToLower().Contains(searchInput))
+                                         s.Program.ProgramName.ToLower().Contains(searchInput)
                                     );
                 }
             }

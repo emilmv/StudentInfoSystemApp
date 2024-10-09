@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using StudentInfoSystemApp.Application.Implementations;
-using StudentInfoSystemApp.Application.Interfaces;
+using StudentInfoSystemApp.Application.Services.Implementations;
+using StudentInfoSystemApp.Application.Services.Interfaces;
 using StudentInfoSystemApp.DataAccess.Data;
 
 namespace StudentInfoSystemApp.Presentation.Extensions
@@ -23,7 +23,8 @@ namespace StudentInfoSystemApp.Presentation.Extensions
             services.AddScoped<IStudentService, StudentService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IJwtService, JwtService>();
-            
+            services.AddScoped<IEmailService, EmailService>();
+
             return services;
         }
     }

@@ -3,13 +3,13 @@ using Microsoft.EntityFrameworkCore;
 using StudentInfoSystemApp.Application.DTOs.PaginationDTOs;
 using StudentInfoSystemApp.Application.DTOs.ScheduleDTOs;
 using StudentInfoSystemApp.Application.Exceptions;
-using StudentInfoSystemApp.Application.Interfaces;
+using StudentInfoSystemApp.Application.Services.Interfaces;
 using StudentInfoSystemApp.Core.Entities;
 using StudentInfoSystemApp.DataAccess.Data;
 
-namespace StudentInfoSystemApp.Application.Implementations
+namespace StudentInfoSystemApp.Application.Services.Implementations
 {
-    public class ScheduleService:IScheduleService
+    public class ScheduleService : IScheduleService
     {
         private readonly StudentInfoSystemContext _studentInfoSystemContext;
         private readonly IMapper _mapper;
@@ -34,13 +34,13 @@ namespace StudentInfoSystemApp.Application.Implementations
                 searchInput = searchInput.Trim().ToLower();
 
                 query = query.Where(s =>
-                    (s.Semester != null && s.Semester.Trim().ToLower().Contains(searchInput)) ||
-                    (s.ClassTime != null && s.ClassTime.Trim().ToLower().Contains(searchInput)) ||
-                    (s.Classroom != null && s.Classroom.Trim().ToLower().Contains(searchInput)) ||
-                    (s.Course.CourseName != null && s.Course.CourseName.Trim().ToLower().Contains(searchInput)) ||
-                    (s.Course.CourseCode.Trim().ToLower().ToString()==searchInput)||
-                    (s.Instructor.FirstName != null && s.Instructor.FirstName.Trim().ToLower().Contains(searchInput)) ||
-                    (s.Instructor.LastName != null && s.Instructor.LastName.Trim().ToLower().Contains(searchInput)) ||
+                    s.Semester != null && s.Semester.Trim().ToLower().Contains(searchInput) ||
+                    s.ClassTime != null && s.ClassTime.Trim().ToLower().Contains(searchInput) ||
+                    s.Classroom != null && s.Classroom.Trim().ToLower().Contains(searchInput) ||
+                    s.Course.CourseName != null && s.Course.CourseName.Trim().ToLower().Contains(searchInput) ||
+                    s.Course.CourseCode.Trim().ToLower().ToString() == searchInput ||
+                    s.Instructor.FirstName != null && s.Instructor.FirstName.Trim().ToLower().Contains(searchInput) ||
+                    s.Instructor.LastName != null && s.Instructor.LastName.Trim().ToLower().Contains(searchInput) ||
                     ((s.Instructor.FirstName ?? string.Empty) + " " + (s.Instructor.LastName ?? string.Empty)).ToLower().Contains(searchInput)
                 );
             }
@@ -75,17 +75,17 @@ namespace StudentInfoSystemApp.Application.Implementations
         public async Task<int> CreateAsync(ScheduleCreateDTO scheduleCreateDTO)
         {
             //Validating Course ID
-            var existingCourse= await _studentInfoSystemContext.Courses.SingleOrDefaultAsync(c=>c.ID==scheduleCreateDTO.CourseID);
+            var existingCourse = await _studentInfoSystemContext.Courses.SingleOrDefaultAsync(c => c.ID == scheduleCreateDTO.CourseID);
             if (existingCourse == null) throw new CustomException(400, "Course ID", $"A Course with ID of: '{scheduleCreateDTO.CourseID}' not found in the database.");
 
             //Validating Instructor ID
-            var existingInstructor=await _studentInfoSystemContext.Instructors.SingleOrDefaultAsync(i=>i.ID==scheduleCreateDTO.InstructorID);
+            var existingInstructor = await _studentInfoSystemContext.Instructors.SingleOrDefaultAsync(i => i.ID == scheduleCreateDTO.InstructorID);
             if (existingInstructor == null) throw new CustomException(400, "Instructor ID", $"An Instructor with ID of: '{scheduleCreateDTO.InstructorID}' not found in the database");
 
             //Checking if Schedule exists in the database
             var existingSchedule = await _studentInfoSystemContext.Schedules.SingleOrDefaultAsync(
-                s => s.Semester.Trim().ToLower() == scheduleCreateDTO.Semester.Trim().ToLower()&&
-                s.CourseID == scheduleCreateDTO.CourseID&&
+                s => s.Semester.Trim().ToLower() == scheduleCreateDTO.Semester.Trim().ToLower() &&
+                s.CourseID == scheduleCreateDTO.CourseID &&
                 s.InstructorID == scheduleCreateDTO.InstructorID);
             if (existingSchedule != null) throw new CustomException(400, "Schedule", $"A Schedule with same Semester, Course ID and Instructor ID already exists in the database.");
 

@@ -7,7 +7,8 @@ namespace StudentInfoSystemApp.Presentation.Extensions
         public static IServiceCollection AddCustomSwagger(this IServiceCollection services)
         {
             services.AddEndpointsApiExplorer();
-            services.AddSwaggerGen(c => {
+            services.AddSwaggerGen(c =>
+            {
                 c.SwaggerDoc("v1", new OpenApiInfo
                 {
                     Title = "JWTToken_Auth_API",

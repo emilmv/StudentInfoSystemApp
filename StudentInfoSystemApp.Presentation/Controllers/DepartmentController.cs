@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using StudentInfoSystemApp.Application.DTOs.DepartmentDTOs;
-using StudentInfoSystemApp.Application.Implementations;
-using StudentInfoSystemApp.Application.Interfaces;
+using StudentInfoSystemApp.Application.Services.Interfaces;
 
 namespace StudentInfoSystemApp.Presentation.Controllers
 {
@@ -19,7 +18,7 @@ namespace StudentInfoSystemApp.Presentation.Controllers
         [HttpGet("")]
         public async Task<IActionResult> Get([FromQuery] int page = 1, [FromQuery] string searchInput = "")
         {
-            return Ok(await _departmentService.GetAllAsync(page,searchInput));
+            return Ok(await _departmentService.GetAllAsync(page, searchInput));
         }
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int? id)

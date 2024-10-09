@@ -6,11 +6,11 @@ using StudentInfoSystemApp.Core.Entities;
 
 namespace StudentInfoSystemApp.Application.MapProfiles
 {
-    public class InstructorMapProfile:Profile
+    public class InstructorMapProfile : Profile
     {
         public InstructorMapProfile()
         {
-            
+
         }
         public InstructorMapProfile(IHttpContextAccessor _httpContextAccessor)
         {
@@ -24,7 +24,7 @@ namespace StudentInfoSystemApp.Application.MapProfiles
             CreateMap<Department, DepartmentInInstructorReturnDTO>()
                 .ForMember(d => d.DepartmentName, map => map.MapFrom(s => s.DepartmentName.Trim()));
             CreateMap<Schedule, ScheduleInInstructorReturnDTO>()
-                .ForMember(d=>d.CourseName,map=>map.MapFrom(s=>s.Course.CourseName));
+                .ForMember(d => d.CourseName, map => map.MapFrom(s => s.Course.CourseName));
 
             //Map for CreateDTO
             CreateMap<InstructorCreateDTO, Instructor>()

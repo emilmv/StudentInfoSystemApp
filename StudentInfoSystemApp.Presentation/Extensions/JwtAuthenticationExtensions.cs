@@ -6,13 +6,15 @@ namespace StudentInfoSystemApp.Presentation.Extensions
 {
     public static class JwtAuthenticationExtensions
     {
-        public static IServiceCollection AddJWTAuthentication(this IServiceCollection services,IConfiguration configuration)
+        public static IServiceCollection AddJWTAuthentication(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddAuthentication(cfg => {
+            services.AddAuthentication(cfg =>
+            {
                 cfg.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 cfg.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                 cfg.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-            }).AddJwtBearer(x => {
+            }).AddJwtBearer(x =>
+            {
                 x.RequireHttpsMetadata = false;
                 x.SaveToken = false;
                 x.TokenValidationParameters = new TokenValidationParameters

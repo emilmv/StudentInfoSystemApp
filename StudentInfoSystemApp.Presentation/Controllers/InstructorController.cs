@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using StudentInfoSystemApp.Application.DTOs.EnrollmentDTOs;
 using StudentInfoSystemApp.Application.DTOs.InstructorDTOs;
-using StudentInfoSystemApp.Application.Implementations;
-using StudentInfoSystemApp.Application.Interfaces;
+using StudentInfoSystemApp.Application.Services.Interfaces;
 
 namespace StudentInfoSystemApp.Presentation.Controllers
 {

@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using StudentInfoSystemApp.Core.Entities;
 
 namespace StudentInfoSystemApp.Application.DTOs.ProgramDTOs
 {

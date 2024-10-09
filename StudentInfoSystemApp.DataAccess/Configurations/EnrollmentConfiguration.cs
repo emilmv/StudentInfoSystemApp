@@ -31,7 +31,7 @@ namespace StudentInfoSystemApp.DataAccess.Configurations
             builder.HasMany(e => e.Attendances)
                 .WithOne(a => a.Enrollment)
                 .HasForeignKey(a => a.EnrollmentID);
-                //.OnDelete(DeleteBehavior.Cascade);
+            //.OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

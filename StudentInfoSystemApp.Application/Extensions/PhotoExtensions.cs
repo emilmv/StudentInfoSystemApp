@@ -4,7 +4,7 @@ namespace StudentInfoSystemApp.Application.Extensions
 {
     public static class PhotoExtensions
     {
-        public static string Save(this IFormFile photo,string firstName,string lastName, string root, string folder)
+        public static string Save(this IFormFile photo, string firstName, string lastName, string root, string folder)
         {
             string newPhotoName = $"{firstName}_{lastName}" + Path.GetExtension(photo.FileName);
             string path = Path.Combine(root, "wwwroot", folder, newPhotoName);

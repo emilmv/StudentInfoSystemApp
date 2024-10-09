@@ -1,6 +1,6 @@
 ﻿using StudentInfoSystemApp.Core.Entities;
 
-namespace StudentInfoSystemApp.Application.Interfaces
+namespace StudentInfoSystemApp.Application.Services.Interfaces
 {
     public interface IJwtService
     {

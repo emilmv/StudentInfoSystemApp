@@ -1,6 +1,4 @@
-﻿using StudentInfoSystemApp.Core.Entities;
-
-namespace StudentInfoSystemApp.Application.DTOs.StudentDTOs
+﻿namespace StudentInfoSystemApp.Application.DTOs.StudentDTOs
 {
     public class StudentReturnDTO
     {
