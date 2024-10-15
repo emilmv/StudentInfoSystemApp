@@ -1,6 +1,6 @@
 ﻿namespace StudentInfoSystemApp.Core.Entities
 {
-    public class Attendance
+    public class Attendance:BaseEntity
     {
         public int ID { get; set; }
         public DateTime AttendanceDate { get; set; }

@@ -2,7 +2,7 @@
 using StudentInfoSystemApp.Application.DTOs.DepartmentDTOs;
 using StudentInfoSystemApp.Core.Entities;
 
-namespace StudentInfoSystemApp.Application.MapProfiles
+namespace StudentInfoSystemApp.Application.Helpers.MapProfiles
 {
     public class DepartmentMapProfile : Profile
     {

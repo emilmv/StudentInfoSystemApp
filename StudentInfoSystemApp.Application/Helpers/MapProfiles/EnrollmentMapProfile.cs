@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using StudentInfoSystemApp.Application.DTOs.EnrollmentDTOs;
 using StudentInfoSystemApp.Core.Entities;
 
-namespace StudentInfoSystemApp.Application.MapProfiles
+namespace StudentInfoSystemApp.Application.Helpers.MapProfiles
 {
     public class EnrollmentMapProfile : Profile
     {

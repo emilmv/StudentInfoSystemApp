@@ -1,5 +1,6 @@
 ﻿using StudentInfoSystemApp.Application.DTOs.DepartmentDTOs;
 using StudentInfoSystemApp.Application.DTOs.PaginationDTOs;
+using StudentInfoSystemApp.Application.DTOs.ResponseDTOs;
 
 namespace StudentInfoSystemApp.Application.Services.Interfaces
 {
@@ -9,5 +10,6 @@ namespace StudentInfoSystemApp.Application.Services.Interfaces
         Task<DepartmentReturnDTO> GetByIdAsync(int? id);
         Task<int> CreateAsync(DepartmentCreateDTO departmentCreateDTO);
         Task<bool> DeleteAsync(int? id);
+        Task<UpdateResponseDTO<DepartmentReturnDTO>> UpdateAsync(int? id, string departmentName);
     }
 }

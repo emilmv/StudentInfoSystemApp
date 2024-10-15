@@ -1,6 +1,6 @@
 ﻿namespace StudentInfoSystemApp.Core.Entities
 {
-    public class Enrollment
+    public class Enrollment : BaseEntity
     {
         public int ID { get; set; }
         public DateTime EnrollmentDate { get; set; }

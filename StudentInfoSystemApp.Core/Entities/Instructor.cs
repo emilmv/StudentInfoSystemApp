@@ -1,6 +1,6 @@
 ﻿namespace StudentInfoSystemApp.Core.Entities
 {
-    public class Instructor
+    public class Instructor : BaseEntity
     {
         public int ID { get; set; }
         public string? FirstName { get; set; }

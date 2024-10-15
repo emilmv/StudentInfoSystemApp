@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using StudentInfoSystemApp.Application.DTOs.AttendanceDTOs;
 using StudentInfoSystemApp.Application.DTOs.CourseDTOs;
+using StudentInfoSystemApp.Application.Services.Implementations;
 using StudentInfoSystemApp.Application.Services.Interfaces;
 
 namespace StudentInfoSystemApp.Presentation.Controllers
@@ -16,17 +18,17 @@ namespace StudentInfoSystemApp.Presentation.Controllers
         }
 
         [HttpGet("")]
-        public async Task<IActionResult> Get([FromQuery] int page = 1, [FromQuery] string searchInput = "")
+        public async Task<IActionResult> GetAsync([FromQuery] int page = 1, [FromQuery] string searchInput = "")
         {
             return Ok(await _courseService.GetAllAsync(page, searchInput));
         }
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int? id)
+        public async Task<IActionResult> GetAsync(int? id)
         {
             return Ok(await _courseService.GetByIdAsync(id));
         }
         [HttpPost("")]
-        public async Task<IActionResult> Create([FromForm] CourseCreateDTO courseCreateDTO)
+        public async Task<IActionResult> CreateAsync([FromForm] CourseCreateDTO courseCreateDTO)
         {
             return Ok(await _courseService.CreateAsync(courseCreateDTO));
         }
@@ -34,6 +36,11 @@ namespace StudentInfoSystemApp.Presentation.Controllers
         public async Task<IActionResult> DeleteAsync(int? id)
         {
             return Ok(await _courseService.DeleteAsync(id));
+        }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateAsync(int id, [FromBody] CourseUpdateDTO courseUpdateDTO)
+        {
+            return Ok(await _courseService.UpdateAsync(id, courseUpdateDTO));
         }
     }
 }

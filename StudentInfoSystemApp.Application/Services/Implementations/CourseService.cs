@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using StudentInfoSystemApp.Application.DTOs.CourseDTOs;
 using StudentInfoSystemApp.Application.DTOs.PaginationDTOs;
+using StudentInfoSystemApp.Application.DTOs.ResponseDTOs;
 using StudentInfoSystemApp.Application.Exceptions;
 using StudentInfoSystemApp.Application.Services.Interfaces;
 using StudentInfoSystemApp.Core.Entities;
@@ -110,6 +111,84 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
 
             //Returning true if delete successful
             return true;
+        }
+        public async Task<UpdateResponseDTO<CourseReturnDTO>> UpdateAsync(int? id, CourseUpdateDTO courseUpdateDTO)
+        {
+            //extracting query
+            var query = _studentInfoSystemContext.Courses
+                .Include(c=>c.Program)
+                .Include(c=>c.Enrollments)
+                .Include(c=>c.Schedules)
+                .AsQueryable();
+
+            //Checking if ID from body is provided
+            if (id is null) throw new CustomException(400, "Attendance ID", "Course ID must not be empty");
+
+            //Finding relevant Course with ID
+            var existingCourse = await query.SingleOrDefaultAsync(c => c.ID == id);
+            if (existingCourse is null) throw new CustomException(400, "Course ID", $"A Course with ID of: '{id}' not found in the database");
+
+            //Checking if ProgramID is changed to validate existence
+            if (existingCourse.ProgramID != courseUpdateDTO.ProgramID)
+            {
+                courseUpdateDTO.ProgramID = (courseUpdateDTO.ProgramID == null || courseUpdateDTO.ProgramID == 0)
+                    ? existingCourse.ProgramID
+                    : courseUpdateDTO.ProgramID;
+
+                // checking if the ProgramID has changed and validate it
+                if (existingCourse.ProgramID != courseUpdateDTO.ProgramID)
+                {
+                    var existingProgram = await _studentInfoSystemContext.Programs
+                        .SingleOrDefaultAsync(p => p.ID == courseUpdateDTO.ProgramID);
+
+                    if (existingProgram is null)
+                        throw new CustomException(400, "Program ID", $"A Program with ID of: '{courseUpdateDTO.ProgramID}' not found in the database");
+                }
+            }
+
+            //Checking if Coursename is provided
+            if (!string.IsNullOrWhiteSpace(courseUpdateDTO.CourseName))
+            {
+                //Checking if CourseName is available
+                var existingCourseName = await query.SingleOrDefaultAsync(c => c.CourseName.Trim().ToLower().Equals(courseUpdateDTO.CourseName.Trim().ToLower()));
+                if (existingCourseName != null && existingCourseName != existingCourse)
+                    throw new CustomException(400, "Course Name", $"A course with name of: '{courseUpdateDTO.CourseName}' already exists in the database");
+
+                //Changing CourseName
+                existingCourse.CourseName = courseUpdateDTO.CourseName;
+            }
+
+            //Checking if CourseCode is provided
+            if (!string.IsNullOrWhiteSpace(courseUpdateDTO.CourseCode))
+            {
+                //Checking if CourseCode is available
+                var existingCourseCode = await query.SingleOrDefaultAsync(c => c.CourseCode.Trim().ToLower().Equals(courseUpdateDTO.CourseCode.Trim().ToLower()));
+                if (existingCourseCode != null && existingCourseCode != existingCourse)
+                    throw new CustomException(400, "Course Code", $"A course with code of: '{courseUpdateDTO.CourseCode}' already exists in the database");
+
+                //Changing CourseCode
+                existingCourse.CourseCode = courseUpdateDTO.CourseCode;
+            }
+
+            if (!string.IsNullOrWhiteSpace(courseUpdateDTO.Description))
+                existingCourse.Description = courseUpdateDTO.Description; //Just changing because description validation is not necessary
+
+            if (courseUpdateDTO.Credits.HasValue && courseUpdateDTO.Credits != 0)
+                existingCourse.Credits = courseUpdateDTO.Credits.Value;
+
+            existingCourse.ProgramID = courseUpdateDTO.ProgramID.GetValueOrDefault();
+
+            // Save changes
+            _studentInfoSystemContext.Update(existingCourse);
+            await _studentInfoSystemContext.SaveChangesAsync();
+
+            //Return response DTO
+            return new UpdateResponseDTO<CourseReturnDTO>()
+            {
+                Response = true,
+                UpdateDate = DateTime.Now.ToShortDateString(),
+                Objects=_mapper.Map<CourseReturnDTO>(existingCourse)
+            };
         }
     }
 }

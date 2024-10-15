@@ -2,7 +2,7 @@
 using StudentInfoSystemApp.Application.DTOs.AttendanceDTOs;
 using StudentInfoSystemApp.Core.Entities;
 
-namespace StudentInfoSystemApp.Application.MapProfiles
+namespace StudentInfoSystemApp.Application.Helpers.MapProfiles
 {
     public class AttendanceMapProfile : Profile
     {
@@ -15,6 +15,10 @@ namespace StudentInfoSystemApp.Application.MapProfiles
 
             //Create DTO
             CreateMap<AttendanceCreateDTO, Attendance>()
+                .ForMember(d => d.Status, map => map.MapFrom(s => s.Status.FirstCharToUpper()));
+
+            //Update DTO
+            CreateMap<AttendanceUpdateDTO, Attendance>()
                 .ForMember(d => d.Status, map => map.MapFrom(s => s.Status.FirstCharToUpper()));
         }
     }

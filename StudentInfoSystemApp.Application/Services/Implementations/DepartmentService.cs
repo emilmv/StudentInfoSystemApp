@@ -1,11 +1,15 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using StudentInfoSystemApp.Application.DTOs.CourseDTOs;
 using StudentInfoSystemApp.Application.DTOs.DepartmentDTOs;
 using StudentInfoSystemApp.Application.DTOs.PaginationDTOs;
+using StudentInfoSystemApp.Application.DTOs.ResponseDTOs;
 using StudentInfoSystemApp.Application.Exceptions;
 using StudentInfoSystemApp.Application.Services.Interfaces;
 using StudentInfoSystemApp.Core.Entities;
 using StudentInfoSystemApp.DataAccess.Data;
+using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace StudentInfoSystemApp.Application.Services.Implementations
 {
@@ -88,6 +92,41 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
 
             //Returning true if delete successful
             return true;
+        }
+        public async Task<UpdateResponseDTO<DepartmentReturnDTO>> UpdateAsync(int? id, string? departmentName)
+        {
+            //Extracting query to not overload requests
+            var query = _studentInfoSystemContext.Departments
+                .Include(d => d.Instructors)
+                .AsQueryable();
+
+            //Checking if ID from body is provided
+            if (id is null) throw new CustomException(400, "Department ID", "Department ID must not be empty");
+
+            //Checking if DepartmentName is provided
+            if (string.IsNullOrWhiteSpace(departmentName)||!Regex.IsMatch(departmentName,"^[a-zA-Z0-9 ]*$")) throw new CustomException(400, "Invalid Department Name", "Department name can only contain letters, numbers, and spaces.");
+
+            //Finding the Department in the databse
+            var existingDepartment=await query.FirstOrDefaultAsync(d=>d.ID==id);
+            if (existingDepartment == null) throw new CustomException(400, "Department ID", $"A department with ID of: '{id}' not found in the database");
+        
+            //Checking if provided name is not duplicate
+            var duplicateDepartment= await _studentInfoSystemContext.Departments.FirstOrDefaultAsync(d=>d.DepartmentName.Trim().ToLower().Equals(departmentName.Trim().ToLower()));
+            if (duplicateDepartment != null) throw new CustomException(400, "Department Name", $"A department with name of: '{departmentName}' already exists in the database");
+
+            //Changing name
+            existingDepartment.DepartmentName=departmentName.FirstCharToUpper();
+
+            //Save changes
+            _studentInfoSystemContext.Update(existingDepartment);
+            await _studentInfoSystemContext.SaveChangesAsync();
+
+            return new UpdateResponseDTO<DepartmentReturnDTO>()
+            {
+                Response = true,
+                UpdateDate = DateTime.Now.ToShortDateString(),
+                Objects = _mapper.Map<DepartmentReturnDTO>(existingDepartment)
+            };
         }
     }
 }

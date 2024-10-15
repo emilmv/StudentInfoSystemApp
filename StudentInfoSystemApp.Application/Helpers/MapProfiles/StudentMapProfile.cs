@@ -4,7 +4,7 @@ using StudentInfoSystemApp.Application.DTOs.StudentDTOs;
 using StudentInfoSystemApp.Application.Extensions;
 using StudentInfoSystemApp.Core.Entities;
 
-namespace StudentInfoSystemApp.Application.MapProfiles
+namespace StudentInfoSystemApp.Application.Helpers.MapProfiles
 {
     public class StudentMapProfile : Profile
     {

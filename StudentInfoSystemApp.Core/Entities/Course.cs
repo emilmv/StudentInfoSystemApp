@@ -1,6 +1,6 @@
 ﻿namespace StudentInfoSystemApp.Core.Entities
 {
-    public class Course
+    public class Course : BaseEntity
     {
         public int ID { get; set; }
         public string? CourseName { get; set; }

@@ -13,13 +13,13 @@ namespace StudentInfoSystemApp.Application.DTOs.AttendanceDTOs
     {
         public AttendanceCreateDTOValidator()
         {
-            RuleFor(attendance => attendance.AttendanceDate)
+            RuleFor(a => a.AttendanceDate)
             .NotEmpty().WithMessage("Attendance date is required.");
 
-            RuleFor(attendance => attendance.Status)
+            RuleFor(a => a.Status)
                 .NotEmpty().WithMessage("Status is required.");
 
-            RuleFor(attendance => attendance.EnrollmentID)
+            RuleFor(a => a.EnrollmentID)
                 .GreaterThan(0).WithMessage("Enrollment ID must be a positive number.");
         }
     }

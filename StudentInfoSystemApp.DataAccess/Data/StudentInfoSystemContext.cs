@@ -27,21 +27,9 @@ namespace StudentInfoSystemApp.DataAccess.Data
             // Seed Roles
             List<IdentityRole> roles = new List<IdentityRole>
             {
-                new IdentityRole
-                {
-                    Name = "Owner",
-                    NormalizedName = "OWNER"
-                },
-                new IdentityRole
-                {
-                    Name = "Admin",
-                    NormalizedName = "ADMIN"
-                },
-                new IdentityRole
-                {
-                    Name = "User",
-                    NormalizedName = "USER"
-                }
+                new IdentityRole{Name = "Owner",NormalizedName = "OWNER"},
+                new IdentityRole{Name = "Admin",NormalizedName = "ADMIN"},
+                new IdentityRole{Name = "User",NormalizedName = "USER"}
             };
             modelBuilder.Entity<IdentityRole>().HasData(roles);
 
@@ -74,6 +62,32 @@ namespace StudentInfoSystemApp.DataAccess.Data
             modelBuilder.Entity<IdentityUserRole<string>>().HasData(userRoles);
 
             base.OnModelCreating(modelBuilder);
+        }
+        public override int SaveChanges()
+        {
+            UpdateTimestamps();
+            return base.SaveChanges();
+        }
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            UpdateTimestamps();
+            return await base.SaveChangesAsync(cancellationToken);
+        }
+        private void UpdateTimestamps()
+        {
+            var entries = ChangeTracker.Entries<BaseEntity>();
+
+            foreach (var entry in entries)
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    entry.Entity.CreateDate = DateTime.Now;
+                }
+                else if (entry.State == EntityState.Modified)
+                {
+                    entry.Entity.UpdateDate = DateTime.Now;
+                }
+            }
         }
     }
 }

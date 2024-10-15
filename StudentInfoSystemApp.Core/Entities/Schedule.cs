@@ -1,6 +1,6 @@
 ﻿namespace StudentInfoSystemApp.Core.Entities
 {
-    public class Schedule
+    public class Schedule : BaseEntity
     {
         public int ID { get; set; }
         public string? Semester { get; set; }

@@ -1,11 +1,15 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using StudentInfoSystemApp.Application.DTOs.AttendanceDTOs;
+using StudentInfoSystemApp.Application.DTOs.CourseDTOs;
 using StudentInfoSystemApp.Application.DTOs.EnrollmentDTOs;
 using StudentInfoSystemApp.Application.DTOs.PaginationDTOs;
+using StudentInfoSystemApp.Application.DTOs.ResponseDTOs;
 using StudentInfoSystemApp.Application.Exceptions;
 using StudentInfoSystemApp.Application.Services.Interfaces;
 using StudentInfoSystemApp.Core.Entities;
 using StudentInfoSystemApp.DataAccess.Data;
+using System.Globalization;
 
 namespace StudentInfoSystemApp.Application.Services.Implementations
 {
@@ -128,6 +132,101 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
 
             //Returning true if delete successful
             return true;
+        }
+        public async Task<UpdateResponseDTO<EnrollmentReturnDTO>> UpdateAsync(int? id, EnrollmentUpdateDTO enrollmentUpdateDTO)
+        {
+            //extracting query
+            var query = _studentInfoSystemContext
+                .Enrollments
+                .Include(e => e.Student)
+                .Include(e => e.Course)
+                .Include(e => e.Attendances)
+                .AsQueryable();
+
+            //Checking if ID from body is provided
+            if (id is null) throw new CustomException(400, "Enrollment ID", "Enrollment ID must not be empty");
+
+            //Finding relevant Enrollment with ID
+            var existingEnrollment = await query.FirstOrDefaultAsync(e => e.ID == id);
+            if (existingEnrollment is null) throw new CustomException(400, "Enrollment ID", $"An Enrollment with ID of: '{id}' not found in the database");
+
+            //Checking if StudentID is changed to validate
+            if (existingEnrollment.StudentID != enrollmentUpdateDTO.StudentID)
+            {
+                //Checking if null or 0 to keep previous, change if provided
+                enrollmentUpdateDTO.StudentID = (enrollmentUpdateDTO.StudentID == null || enrollmentUpdateDTO.StudentID == 0)
+                    ? existingEnrollment.StudentID
+                    : enrollmentUpdateDTO.StudentID;
+
+                //checking if provided
+                if (existingEnrollment.StudentID != enrollmentUpdateDTO.StudentID)
+                {
+                    //Finding student
+                    var existingStudent = await _studentInfoSystemContext.Students.SingleOrDefaultAsync(s => s.ID == enrollmentUpdateDTO.StudentID);
+                    if (existingStudent is null) throw new CustomException(400, "Student ID", $"A Student with ID of: '{enrollmentUpdateDTO.StudentID}' not found in the database");
+                }
+            }
+            //Same thing for Course
+            if (existingEnrollment.CourseID != enrollmentUpdateDTO.CourseID)
+            {
+                //Checking if null or 0 to keep previous, change if provided
+                enrollmentUpdateDTO.CourseID = (enrollmentUpdateDTO.CourseID == null || enrollmentUpdateDTO.CourseID == 0)
+                    ? existingEnrollment.CourseID
+                    : enrollmentUpdateDTO.CourseID;
+
+                //checking if provided
+                if (existingEnrollment.CourseID != enrollmentUpdateDTO.CourseID)
+                {
+                    //Finding Course
+                    var existingCourse = await _studentInfoSystemContext.Courses.SingleOrDefaultAsync(s => s.ID == enrollmentUpdateDTO.CourseID);
+                    if (existingCourse is null) throw new CustomException(400, "Course ID", $"A Course with ID of: '{enrollmentUpdateDTO.CourseID}' not found in the database");
+                }
+            }
+            //Checking if Date is changed
+            if (!string.IsNullOrWhiteSpace(enrollmentUpdateDTO.EnrollmentDate))
+            {
+                if (DateTime.TryParseExact(enrollmentUpdateDTO.EnrollmentDate,
+                    "dd/MM/yyyy",
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out DateTime parsedDate))
+                {
+                    if (parsedDate.Date > DateTime.Now.Date)
+                        throw new CustomException(400, "Enrollment Date", "Enrollment date can not be in the future.");
+                    existingEnrollment.EnrollmentDate = parsedDate;
+                }
+                else
+                {
+                    throw new CustomException(400, "Enrollment Date", "Invalid date format. Please use dd/MM/yyyy.");
+                }
+            }
+            //Checking for duplication
+            var duplicateEnrollment = await query.SingleOrDefaultAsync(e => e.EnrollmentDate.Date == existingEnrollment.EnrollmentDate.Date && e.StudentID == existingEnrollment.StudentID && e.CourseID == existingEnrollment.CourseID);
+            if (duplicateEnrollment != null && duplicateEnrollment != existingEnrollment)
+                throw new CustomException(400, "Duplicate Enrollment", "An Enrollment with same StudentID, Enrollment Date and CourseID already exists in the database");
+
+            //Changing other fields validated from AbstractValidator
+            if (!string.IsNullOrWhiteSpace(enrollmentUpdateDTO.Grade))
+                existingEnrollment.Grade = enrollmentUpdateDTO.Grade;
+
+            if (!string.IsNullOrWhiteSpace(enrollmentUpdateDTO.Semester))
+                existingEnrollment.Semester = enrollmentUpdateDTO.Semester.FirstCharToUpper();
+
+            existingEnrollment.StudentID= enrollmentUpdateDTO.StudentID.GetValueOrDefault();
+
+            existingEnrollment.CourseID=enrollmentUpdateDTO.CourseID.GetValueOrDefault();
+
+            // Save changes
+            _studentInfoSystemContext.Update(existingEnrollment);
+            await _studentInfoSystemContext.SaveChangesAsync();
+
+            //Return response DTO
+            return new UpdateResponseDTO<EnrollmentReturnDTO>()
+            {
+                Response = true,
+                UpdateDate = DateTime.Now.ToShortDateString(),
+                Objects = _mapper.Map<EnrollmentReturnDTO>(existingEnrollment)
+            };
         }
     }
 }
