@@ -35,5 +35,10 @@ namespace StudentInfoSystemApp.Presentation.Controllers
         {
             return Ok(await _scheduleService.DeleteAsync(id));
         }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateAsync(int id, [FromForm] ScheduleUpdateDTO scheduleUpdateDTO)
+        {
+            return Ok(await _scheduleService.UpdateAsync(id, scheduleUpdateDTO));
+        }
     }
 }

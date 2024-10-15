@@ -17,13 +17,13 @@ namespace StudentInfoSystemApp.Presentation.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterDTO registerDTO)
+        public async Task<IActionResult> Register([FromForm]RegisterDTO registerDTO)
         {
             return Ok(await _authService.RegisterAsync(registerDTO));
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDTO loginDTO)
+        public async Task<IActionResult> Login([FromForm]LoginDTO loginDTO)
         {
             return Ok(await _authService.LoginAsync(loginDTO));
         }
@@ -53,7 +53,7 @@ namespace StudentInfoSystemApp.Presentation.Controllers
         }
 
         [HttpPost("request-reset-password")]
-        public async Task<IActionResult> RequestResetPassword([FromBody] string email)
+        public async Task<IActionResult> RequestResetPassword([FromForm] string email)
         {
             return Ok(await _authService.SendPasswordResetEmailAsync(email));
         }

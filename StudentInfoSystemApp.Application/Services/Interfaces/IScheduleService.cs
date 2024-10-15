@@ -1,4 +1,5 @@
 ﻿using StudentInfoSystemApp.Application.DTOs.PaginationDTOs;
+using StudentInfoSystemApp.Application.DTOs.ResponseDTOs;
 using StudentInfoSystemApp.Application.DTOs.ScheduleDTOs;
 
 namespace StudentInfoSystemApp.Application.Services.Interfaces
@@ -9,6 +10,6 @@ namespace StudentInfoSystemApp.Application.Services.Interfaces
         Task<ScheduleReturnDTO> GetByIdAsync(int? id);
         Task<int> CreateAsync(ScheduleCreateDTO scheduleCreateDTO);
         Task<bool> DeleteAsync(int? id);
-
+        Task<UpdateResponseDTO<ScheduleReturnDTO>> UpdateAsync(int? id, ScheduleUpdateDTO scheduleUpdateDTO);
     }
 }

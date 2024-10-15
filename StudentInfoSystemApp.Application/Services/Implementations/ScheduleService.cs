@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using StudentInfoSystemApp.Application.DTOs.PaginationDTOs;
+using StudentInfoSystemApp.Application.DTOs.ResponseDTOs;
 using StudentInfoSystemApp.Application.DTOs.ScheduleDTOs;
 using StudentInfoSystemApp.Application.Exceptions;
 using StudentInfoSystemApp.Application.Services.Interfaces;
@@ -114,6 +115,80 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
 
             //Returning true if delete successful
             return true;
+        }
+        public async Task<UpdateResponseDTO<ScheduleReturnDTO>> UpdateAsync(int? id, ScheduleUpdateDTO scheduleUpdateDTO)
+        {
+            //extracting query
+            var query = _studentInfoSystemContext
+               .Schedules
+               .Include(s => s.Course)
+               .Include(s => s.Instructor)
+               .AsQueryable();
+
+            //Checking if ID from body is provided
+            if (id is null) throw new CustomException(400, "Schedule ID", "Schedule ID must not be empty");
+
+            //Finding relevant Schedule with ID
+            var existingSchedule = await query.FirstOrDefaultAsync(s => s.ID == id);
+            if (existingSchedule == null) throw new CustomException(400, "Schedule ID", $"A Schedule with ID of: '{id}' not found in the database");
+
+            //Checking if CourseID is changed to validate existence
+            if (existingSchedule.CourseID != scheduleUpdateDTO.CourseID)
+            {
+                scheduleUpdateDTO.CourseID = (scheduleUpdateDTO.CourseID == null || scheduleUpdateDTO.CourseID == 0)
+                    ? existingSchedule.CourseID
+                    : scheduleUpdateDTO.CourseID;
+
+                // checking if provided
+                if (existingSchedule.CourseID != scheduleUpdateDTO.CourseID)
+                {
+                    //Finding the course
+                    var existingCourse = await _studentInfoSystemContext.Courses.SingleOrDefaultAsync(c => c.ID == scheduleUpdateDTO.CourseID);
+                    if (existingCourse is null) throw new CustomException(400, "Course ID", $"A Course with ID of: '{scheduleUpdateDTO.CourseID}' not found in the database");
+                }
+            }
+            //Same thing for Instructor
+            if (existingSchedule.InstructorID != scheduleUpdateDTO.InstructorID)
+            {
+                //Checking if null or 0 to keep previous, change if provided
+                scheduleUpdateDTO.InstructorID = (scheduleUpdateDTO.InstructorID == null || scheduleUpdateDTO.InstructorID == 0)
+                    ? existingSchedule.InstructorID
+                    : scheduleUpdateDTO.InstructorID;
+
+                //checking if provided
+                if (existingSchedule.InstructorID != scheduleUpdateDTO.InstructorID)
+                {
+                    //Finding the Instructor
+                    var existingInstructor = await _studentInfoSystemContext.Instructors.SingleOrDefaultAsync(s => s.ID == scheduleUpdateDTO.InstructorID);
+                    if (existingInstructor is null) throw new CustomException(400, "Instructor ID", $"An Instructor with ID of: '{scheduleUpdateDTO.InstructorID}' not found in the database");
+                }
+            }
+            //Other fields
+            if (!string.IsNullOrWhiteSpace(scheduleUpdateDTO.Semester))
+                existingSchedule.Semester = scheduleUpdateDTO.Semester.FirstCharToUpper();
+            if (!string.IsNullOrWhiteSpace(scheduleUpdateDTO.ClassTime))
+                existingSchedule.ClassTime = scheduleUpdateDTO.ClassTime;
+            if (!string.IsNullOrWhiteSpace(scheduleUpdateDTO.Classroom))
+                existingSchedule.Classroom = scheduleUpdateDTO.Classroom.FirstCharToUpper();
+
+            //checking if classes are not busy
+            var overlappingSchedule = await _studentInfoSystemContext.Schedules
+                .FirstOrDefaultAsync(s => s.Semester.Trim().ToLower() == existingSchedule.Semester.Trim().ToLower() && //semester check
+                             s.Classroom.Trim().ToLower() == existingSchedule.Classroom.Trim().ToLower() && //classroom check
+                             s.ClassTime.Trim() == existingSchedule.ClassTime.Trim()); //classtime check
+            if (overlappingSchedule!=null&&overlappingSchedule!=existingSchedule) throw new CustomException(400, "Overlapping Schedules", $"{existingSchedule.Classroom} is busy at {existingSchedule.ClassTime}, on {existingSchedule.Semester}");
+
+            //Save changes
+            _studentInfoSystemContext.Update(existingSchedule);
+            await _studentInfoSystemContext.SaveChangesAsync();
+
+            //Return response DTO
+            return new UpdateResponseDTO<ScheduleReturnDTO>()
+            {
+                Response=true,
+                UpdateDate=DateTime.Now.ToShortDateString(),
+                Objects=_mapper.Map<ScheduleReturnDTO>(existingSchedule)
+            };
         }
     }
 }

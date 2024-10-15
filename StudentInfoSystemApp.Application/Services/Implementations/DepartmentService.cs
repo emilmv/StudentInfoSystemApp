@@ -104,18 +104,18 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
             if (id is null) throw new CustomException(400, "Department ID", "Department ID must not be empty");
 
             //Checking if DepartmentName is provided
-            if (string.IsNullOrWhiteSpace(departmentName)||!Regex.IsMatch(departmentName,"^[a-zA-Z0-9 ]*$")) throw new CustomException(400, "Invalid Department Name", "Department name can only contain letters, numbers, and spaces.");
+            if (string.IsNullOrWhiteSpace(departmentName) || !Regex.IsMatch(departmentName, "^[a-zA-Z0-9 ]*$")) throw new CustomException(400, "Invalid Department Name", "Department name can only contain letters, numbers, and spaces.");
 
             //Finding the Department in the databse
-            var existingDepartment=await query.FirstOrDefaultAsync(d=>d.ID==id);
+            var existingDepartment = await query.FirstOrDefaultAsync(d => d.ID == id);
             if (existingDepartment == null) throw new CustomException(400, "Department ID", $"A department with ID of: '{id}' not found in the database");
-        
+
             //Checking if provided name is not duplicate
-            var duplicateDepartment= await _studentInfoSystemContext.Departments.FirstOrDefaultAsync(d=>d.DepartmentName.Trim().ToLower().Equals(departmentName.Trim().ToLower()));
-            if (duplicateDepartment != null) throw new CustomException(400, "Department Name", $"A department with name of: '{departmentName}' already exists in the database");
+            var duplicateDepartment = await _studentInfoSystemContext.Departments.FirstOrDefaultAsync(d => d.DepartmentName.Trim().ToLower().Equals(departmentName.Trim().ToLower()));
+            if (duplicateDepartment != null && duplicateDepartment != existingDepartment) throw new CustomException(400, "Department Name", $"A department with name of: '{departmentName}' already exists in the database");
 
             //Changing name
-            existingDepartment.DepartmentName=departmentName.FirstCharToUpper();
+            existingDepartment.DepartmentName = departmentName.FirstCharToUpper();
 
             //Save changes
             _studentInfoSystemContext.Update(existingDepartment);

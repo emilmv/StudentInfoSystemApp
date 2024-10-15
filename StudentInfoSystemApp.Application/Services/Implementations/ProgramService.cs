@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using StudentInfoSystemApp.Application.DTOs.DepartmentDTOs;
+using StudentInfoSystemApp.Application.DTOs.InstructorDTOs;
 using StudentInfoSystemApp.Application.DTOs.PaginationDTOs;
 using StudentInfoSystemApp.Application.DTOs.ProgramDTOs;
+using StudentInfoSystemApp.Application.DTOs.ResponseDTOs;
 using StudentInfoSystemApp.Application.Exceptions;
 using StudentInfoSystemApp.Application.Services.Interfaces;
 using StudentInfoSystemApp.Core.Entities;
@@ -101,6 +104,50 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
 
             //Returning true if delete successful
             return true;
+        }
+        public async Task<UpdateResponseDTO<ProgramReturnDTO>> UpdateAsync(int? id, ProgramUpdateDTO programUpdateDTO)
+        {
+            //extracting query
+            var query = _studentInfoSystemContext
+                .Programs
+                .Include(p => p.Students)
+                .Include(p => p.Courses)
+                .AsQueryable();
+
+            //Checking if ID from body is provided
+            if (id is null) throw new CustomException(400, "Program ID", "Program ID must not be empty");
+
+            //Finding relevant Program with ID
+            var existingProgram = await query.FirstOrDefaultAsync(p => p.ID == id);
+            if (existingProgram == null) throw new CustomException(400, "Program ID", $"A Program with ID of: '{id}' not found in the database");
+
+            if (!string.IsNullOrEmpty(programUpdateDTO.ProgramName))
+            {
+                //avoiding duplicate ProgramName
+                var duplicateProgram = await _studentInfoSystemContext.Programs.FirstOrDefaultAsync(d => d.ProgramName.Trim().ToLower().Equals(programUpdateDTO.ProgramName.Trim().ToLower()));
+                if(duplicateProgram !=null&&duplicateProgram!=existingProgram) throw new CustomException(400, "Program Name", $"A Program with name of: '{programUpdateDTO.ProgramName}' already exists in the database.");
+                existingProgram.ProgramName = programUpdateDTO.ProgramName.FirstCharToUpper();
+            }
+
+            //Updating
+            existingProgram.RequiredCredits = programUpdateDTO.RequiredCredits==0||programUpdateDTO.RequiredCredits is null
+            ? existingProgram.RequiredCredits
+            : programUpdateDTO.RequiredCredits.GetValueOrDefault();
+
+            existingProgram.Description = string.IsNullOrEmpty(programUpdateDTO.Description)
+            ? existingProgram.Description
+            : programUpdateDTO.Description.FirstCharToUpper();
+
+            //Save changes
+            _studentInfoSystemContext.Update(existingProgram);
+            await _studentInfoSystemContext.SaveChangesAsync();
+
+            return new UpdateResponseDTO<ProgramReturnDTO>()
+            {
+                Response = true,
+                UpdateDate = DateTime.Now.ToShortDateString(),
+                Objects = _mapper.Map<ProgramReturnDTO>(existingProgram)
+            };
         }
     }
 }

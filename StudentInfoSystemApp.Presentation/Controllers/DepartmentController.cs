@@ -38,7 +38,7 @@ namespace StudentInfoSystemApp.Presentation.Controllers
             return Ok(await _departmentService.DeleteAsync(id));
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAsync(int id, [FromBody] string departmentName)
+        public async Task<IActionResult> UpdateAsync(int id, [FromForm] string departmentName)
         {
             return Ok(await _departmentService.UpdateAsync(id, departmentName));
         }

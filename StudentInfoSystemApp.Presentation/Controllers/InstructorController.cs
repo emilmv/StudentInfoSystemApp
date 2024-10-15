@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using StudentInfoSystemApp.Application.DTOs.EnrollmentDTOs;
 using StudentInfoSystemApp.Application.DTOs.InstructorDTOs;
+using StudentInfoSystemApp.Application.Services.Implementations;
 using StudentInfoSystemApp.Application.Services.Interfaces;
 
 namespace StudentInfoSystemApp.Presentation.Controllers
@@ -34,6 +36,11 @@ namespace StudentInfoSystemApp.Presentation.Controllers
         public async Task<IActionResult> DeleteAsync(int? id)
         {
             return Ok(await _instructorService.DeleteAsync(id));
+        }
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateAsync(int id, [FromForm] InstructorUpdateDTO instructorUpdateDTO)
+        {
+            return Ok(await _instructorService.UpdateAsync(id, instructorUpdateDTO));
         }
     }
 }
