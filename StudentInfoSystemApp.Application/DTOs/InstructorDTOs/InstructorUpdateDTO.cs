@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using StudentInfoSystemApp.Application.Helpers.StudentHelpers;
 
 namespace StudentInfoSystemApp.Application.DTOs.InstructorDTOs
 {
@@ -45,14 +46,8 @@ namespace StudentInfoSystemApp.Application.DTOs.InstructorDTOs
                 });
 
             RuleFor(i => i.Photo)
-            .Must(BeValidFile).WithMessage("Invalid file type. Only .jpg, .jpeg, .png, or .gif are allowed.")
+            .Must(ValidationHelper.BeValidFile).WithMessage("Invalid file type. Only .jpg, .jpeg, .png, or .gif are allowed.")
             .When(i => i.Photo != null);
-        }
-        private bool BeValidFile(IFormFile? file)
-        {
-            var validExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
-            var fileExtension = System.IO.Path.GetExtension(file.FileName).ToLower();
-            return validExtensions.Contains(fileExtension);
         }
     }
 }

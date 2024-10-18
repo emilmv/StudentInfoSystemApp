@@ -1,7 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using StudentInfoSystemApp.Application.DTOs.DepartmentDTOs;
-using StudentInfoSystemApp.Application.DTOs.InstructorDTOs;
 using StudentInfoSystemApp.Application.DTOs.PaginationDTOs;
 using StudentInfoSystemApp.Application.DTOs.ProgramDTOs;
 using StudentInfoSystemApp.Application.DTOs.ResponseDTOs;
@@ -16,42 +14,21 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
     {
         private readonly StudentInfoSystemContext _studentInfoSystemContext;
         private readonly IMapper _mapper;
-        public ProgramService(StudentInfoSystemContext studentInfoSystemContext, IMapper mapper)
+        private readonly IPaginationService<Program> _paginationService;
+        public ProgramService(StudentInfoSystemContext studentInfoSystemContext, IMapper mapper, IPaginationService<Program> paginationService)
         {
             _studentInfoSystemContext = studentInfoSystemContext;
             _mapper = mapper;
+            _paginationService = paginationService;
         }
 
-        public async Task<PaginationListDTO<ProgramReturnDTO>> GetAllAsync(int page = 1, string searchInput = "")
+        public async Task<PaginationListDTO<ProgramReturnDTO>> GetAllAsync(int page = 1, string searchInput = "", int pageSize = 3)
         {
             //Extracting query to not overload requests
-            var query = _studentInfoSystemContext
-                .Programs
-                .Include(p => p.Students)
-                .Include(p => p.Courses)
-                .AsQueryable();
+            var query =CreateProgramQuery(searchInput);
 
-            //Search logic
-            if (!string.IsNullOrWhiteSpace(searchInput))
-            {
-                searchInput = searchInput.ToLower();
-
-                query = query.Where(p =>
-                    p.RequiredCredits.ToString() == searchInput ||
-                    p.ProgramName != null && p.ProgramName.ToLower().Contains(searchInput) ||
-                    p.Description != null && p.Description.ToLower().Contains(searchInput) ||
-                    p.Students.Any(s =>
-                    s.FirstName != null && s.FirstName.ToLower().Contains(searchInput) ||
-                    s.LastName != null && s.LastName.ToLower().Contains(searchInput) ||
-                        ((s.FirstName ?? string.Empty) + " " + (s.LastName ?? string.Empty)).ToLower().Contains(searchInput)
-                    )
-                );
-            }
-
-            var datas = await query
-               .Skip((page - 1) * 2)
-               .Take(2)
-               .ToListAsync();
+            //Applying Pagination logic
+            var paginatedPrograms = await _paginationService.ApplyPaginationAsync(query, page, pageSize);
 
             var totalCount = await query.CountAsync();
 
@@ -59,25 +36,28 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
             {
                 TotalCount = totalCount,
                 CurrentPage = page,
-                Objects = _mapper.Map<List<ProgramReturnDTO>>(datas)
+                PageSize=pageSize,
+                Objects = _mapper.Map<List<ProgramReturnDTO>>(paginatedPrograms)
             };
         }
         public async Task<ProgramReturnDTO> GetByIdAsync(int? id)
         {
+            //Validating ID
             if (id is null) throw new CustomException(400, "ID", "ID must not be empty");
-            var program = await _studentInfoSystemContext
-                .Programs
-                .Include(p => p.Students)
-                .Include(p => p.Courses)
-                .FirstOrDefaultAsync(d => d.ID == id);
+
+            //Getting the program from the database
+            var program = await FindProgramByIdAsync(id.Value);
+
+            //Not found exception
             if (program is null) throw new CustomException(400, "ID", $"Program with ID of:'{id}'not found in the database");
+           
+            //Returning DTO
             return _mapper.Map<ProgramReturnDTO>(program);
         }
-        public async Task<int> CreateAsync(ProgramCreateDTO programCreateDTO)
+        public async Task<CreateResponseDTO<ProgramReturnDTO>> CreateAsync(ProgramCreateDTO programCreateDTO)
         {
             //Checking if program exists in the database
-            var existingProgram = await _studentInfoSystemContext.Programs.SingleOrDefaultAsync(p => p.ProgramName.Trim().ToLower() == programCreateDTO.ProgramName.Trim().ToLower());
-            if (existingProgram != null) throw new CustomException("Program Name", $"A Program with name of: '{programCreateDTO.ProgramName}' already exists in the database");
+            await ValidateProgramDoesNotExistAsync(programCreateDTO.ProgramName);
 
             //Mapping DTO to an object
             Program program = _mapper.Map<Program>(programCreateDTO);
@@ -86,8 +66,13 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
             await _studentInfoSystemContext.Programs.AddAsync(program);
             await _studentInfoSystemContext.SaveChangesAsync();
 
-            //Returning the ID of the created entity
-            return program.ID;
+            //Returning ResponseDTO
+            return new CreateResponseDTO<ProgramReturnDTO>()
+            {
+                Response = true,
+                CreationDate=DateTime.Now.ToShortDateString(),
+                Objects=_mapper.Map<ProgramReturnDTO>(program)
+            };
         }
         public async Task<bool> DeleteAsync(int? id)
         {
@@ -107,36 +92,24 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
         }
         public async Task<UpdateResponseDTO<ProgramReturnDTO>> UpdateAsync(int? id, ProgramUpdateDTO programUpdateDTO)
         {
-            //extracting query
-            var query = _studentInfoSystemContext
-                .Programs
-                .Include(p => p.Students)
-                .Include(p => p.Courses)
-                .AsQueryable();
-
             //Checking if ID from body is provided
             if (id is null) throw new CustomException(400, "Program ID", "Program ID must not be empty");
 
-            //Finding relevant Program with ID
-            var existingProgram = await query.FirstOrDefaultAsync(p => p.ID == id);
-            if (existingProgram == null) throw new CustomException(400, "Program ID", $"A Program with ID of: '{id}' not found in the database");
+            var existingProgram = await GetProgramByIdAsync(id.Value);
 
+            await ValidateDuplicateProgramNameAsync(existingProgram, programUpdateDTO.ProgramName);
+
+            //Updating fields
             if (!string.IsNullOrEmpty(programUpdateDTO.ProgramName))
-            {
-                //avoiding duplicate ProgramName
-                var duplicateProgram = await _studentInfoSystemContext.Programs.FirstOrDefaultAsync(d => d.ProgramName.Trim().ToLower().Equals(programUpdateDTO.ProgramName.Trim().ToLower()));
-                if(duplicateProgram !=null&&duplicateProgram!=existingProgram) throw new CustomException(400, "Program Name", $"A Program with name of: '{programUpdateDTO.ProgramName}' already exists in the database.");
-                existingProgram.ProgramName = programUpdateDTO.ProgramName.FirstCharToUpper();
-            }
+                existingProgram.ProgramName = programUpdateDTO.ProgramName.FirstCharToUpper(); //Program Name if provided
 
-            //Updating
             existingProgram.RequiredCredits = programUpdateDTO.RequiredCredits==0||programUpdateDTO.RequiredCredits is null
             ? existingProgram.RequiredCredits
-            : programUpdateDTO.RequiredCredits.GetValueOrDefault();
+            : programUpdateDTO.RequiredCredits.GetValueOrDefault(); //Required Credits if changed
 
             existingProgram.Description = string.IsNullOrEmpty(programUpdateDTO.Description)
             ? existingProgram.Description
-            : programUpdateDTO.Description.FirstCharToUpper();
+            : programUpdateDTO.Description.FirstCharToUpper(); //Description if provided
 
             //Save changes
             _studentInfoSystemContext.Update(existingProgram);
@@ -148,6 +121,76 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
                 UpdateDate = DateTime.Now.ToShortDateString(),
                 Objects = _mapper.Map<ProgramReturnDTO>(existingProgram)
             };
+        }
+
+
+        //Private methods
+        private IQueryable<Program> CreateProgramQuery(string searchInput)
+        {
+            var query = _studentInfoSystemContext
+                .Programs
+                .Include(p => p.Students)
+                .Include(p => p.Courses)
+                .AsQueryable();
+
+            // If search input is provided, apply search filter
+            if (!string.IsNullOrWhiteSpace(searchInput))
+            {
+                var lowerSearchInput = searchInput.ToLower();
+
+                query = query.Where(p =>
+                    p.RequiredCredits.ToString() == lowerSearchInput ||
+                    (p.ProgramName != null && p.ProgramName.ToLower().Contains(lowerSearchInput)) ||
+                    (p.Description != null && p.Description.ToLower().Contains(lowerSearchInput)) ||
+                    (p.Students != null && p.Students.Any(s =>
+                        (s.FirstName != null && s.FirstName.ToLower().Contains(lowerSearchInput)) ||
+                        (s.LastName != null && s.LastName.ToLower().Contains(lowerSearchInput)) ||
+                        (((s.FirstName ?? string.Empty) + " " + (s.LastName ?? string.Empty)).ToLower().Contains(lowerSearchInput))
+                    ))
+                );
+            }
+
+            return query;
+        }
+        private async Task<Program?>FindProgramByIdAsync(int id)
+        {
+            return await _studentInfoSystemContext
+                .Programs
+                .Include(p => p.Students)
+                .Include(p => p.Courses)
+                .FirstOrDefaultAsync(d => d.ID == id);
+        }
+        private async Task ValidateProgramDoesNotExistAsync(string programName)
+        {
+            var existingProgram = await _studentInfoSystemContext.Programs
+                .SingleOrDefaultAsync(p => p.ProgramName.Trim().ToLower() == programName.Trim().ToLower());
+
+            if (existingProgram != null)
+            {
+                throw new CustomException(400, "Program Name", $"A Program with name of: '{programName}' already exists in the database");
+            }
+        }
+        private async Task<Program> GetProgramByIdAsync(int id)
+        {
+            var program = await _studentInfoSystemContext.Programs
+                .Include(p => p.Students)
+                .Include(p => p.Courses)
+                .FirstOrDefaultAsync(p => p.ID == id);
+
+            if (program == null)
+                throw new CustomException(400, "Program ID", $"A Program with ID of: '{id}' not found in the database");
+
+            return program;
+        }
+        private async Task ValidateDuplicateProgramNameAsync(Program existingProgram, string newProgramName)
+        {
+            if (string.IsNullOrWhiteSpace(newProgramName)) return;
+
+            var duplicateProgram = await _studentInfoSystemContext.Programs
+                .FirstOrDefaultAsync(d => d.ProgramName.Trim().ToLower() == newProgramName.Trim().ToLower());
+
+            if (duplicateProgram != null && duplicateProgram != existingProgram)
+                throw new CustomException(400, "Program Name", $"A Program with name of: '{newProgramName}' already exists in the database.");
         }
     }
 }

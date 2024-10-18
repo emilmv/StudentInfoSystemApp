@@ -7,9 +7,9 @@ namespace StudentInfoSystemApp.Application.Services.Interfaces
 {
     public interface IProgramService
     {
-        Task<PaginationListDTO<ProgramReturnDTO>> GetAllAsync(int page = 1, string searchInput = "");
+        Task<PaginationListDTO<ProgramReturnDTO>> GetAllAsync(int page = 1, string searchInput = "", int pageSize = 3);
         Task<ProgramReturnDTO> GetByIdAsync(int? id);
-        Task<int> CreateAsync(ProgramCreateDTO programCreateDTO);
+        Task<CreateResponseDTO<ProgramReturnDTO>> CreateAsync(ProgramCreateDTO programCreateDTO);
         Task<bool> DeleteAsync(int? id);
         Task<UpdateResponseDTO<ProgramReturnDTO>> UpdateAsync(int? id, ProgramUpdateDTO programUpdateDTO);
 

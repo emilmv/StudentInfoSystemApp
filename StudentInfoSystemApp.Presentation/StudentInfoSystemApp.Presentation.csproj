@@ -17,11 +17,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\StudentInfoSystemApp.Application\StudentInfoSystemApp.Application.csproj" />
+    <Folder Include="wwwroot\images\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\images\" />
+    <ProjectReference Include="..\StudentInfoSystemApp.Application\StudentInfoSystemApp.Application.csproj" />
   </ItemGroup>
 
   <ItemGroup>

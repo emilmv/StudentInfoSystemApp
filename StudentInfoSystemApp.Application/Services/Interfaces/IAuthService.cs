@@ -7,7 +7,7 @@ namespace StudentInfoSystemApp.Application.Services.Interfaces
     {
         Task<string> RegisterAsync(RegisterDTO registerDTO);
         Task<string> LoginAsync(LoginDTO loginDTO);
-        Task<PaginationListDTO<UserReturnDTO>> GetAllAsync(int page = 1, string searchInput = "");
+        Task<PaginationListDTO<UserReturnDTO>> GetAllAsync(int page = 1, string searchInput = "", int pageSize = 3);
         Task<bool> DeleteAsync(string userId);
         Task<string> VerifyEmailAsync(string email, string token);
         Task<string> ResendVerificationEmailAsync(string email);

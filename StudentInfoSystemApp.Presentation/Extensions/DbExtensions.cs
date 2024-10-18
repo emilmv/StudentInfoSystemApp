@@ -24,6 +24,7 @@ namespace StudentInfoSystemApp.Presentation.Extensions
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IEmailService, EmailService>();
+            services.AddScoped(typeof(IPaginationService<>), typeof(PaginationService<>));
 
             return services;
         }

@@ -23,7 +23,8 @@ namespace StudentInfoSystemApp.Application.Helpers.MapProfiles
                 .ForMember(d => d.Photo, map => map.MapFrom(s => url + "images/" + s.Photo));
             CreateMap<Program, ProgramInStudentReturnDTO>();
             CreateMap<Enrollment, EnrollmentInStudentReturnDTO>()
-                .ForMember(d => d.CourseRegistrationDate, map => map.MapFrom(s => s.EnrollmentDate.ToShortDateString()));
+                .ForMember(d => d.CourseRegistrationDate, map => map.MapFrom(s => s.EnrollmentDate.ToShortDateString()))
+                .ForMember(d=>d.CourseName,map=>map.MapFrom(s=>s.Course.CourseName));
 
             //Map for CreateDTO
             CreateMap<StudentCreateDTO, Student>()

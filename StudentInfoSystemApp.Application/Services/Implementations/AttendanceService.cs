@@ -22,7 +22,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
             _mapper = mapper;
         }
 
-        public async Task<PaginationListDTO<AttendanceReturnDTO>> GetAllAsync(int page = 1, string searchInput = "")
+        public async Task<PaginationListDTO<AttendanceReturnDTO>> GetAllAsync(int page = 1, string searchInput = "", int pageSize = 3)
         {
             //Extracting query to not overload requests
             var query = _studentInfoSystemContext.Attendances

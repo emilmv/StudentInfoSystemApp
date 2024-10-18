@@ -102,7 +102,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
             return _jwtService.GenerateToken(existingUser, userRoles.ToList());
         }
 
-        public async Task<PaginationListDTO<UserReturnDTO>> GetAllAsync(int page = 1, string searchInput = "")
+        public async Task<PaginationListDTO<UserReturnDTO>> GetAllAsync(int page = 1, string searchInput = "", int pageSize = 3)
         {
             //Getting all users
             var query = await _userManager.Users.ToListAsync();

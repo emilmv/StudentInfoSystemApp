@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Http;
+using StudentInfoSystemApp.Application.Helpers.StudentHelpers;
 
 namespace StudentInfoSystemApp.Application.DTOs.StudentDTOs
 {
@@ -32,11 +33,11 @@ namespace StudentInfoSystemApp.Application.DTOs.StudentDTOs
             RuleFor(x => x.DateOfBirth)
             .NotEmpty().WithMessage("Date of birth is required.")
             .LessThan(DateTime.Now).WithMessage("Date of birth must be in the past.")
-            .Must(BeAtLeast16YearsOld).WithMessage("Student must be at least 16 years old.");
+            .Must(ValidationHelper.BeAtLeast16YearsOld).WithMessage("Student must be at least 16 years old.");
 
             RuleFor(x => x.Gender)
                 .NotEmpty().WithMessage("Gender is required.")
-                .Must(BeValidGender)
+                .Must(ValidationHelper.BeValidGender)
                 .WithMessage("Gender must be 'Male' or 'Female'.");
 
             RuleFor(x => x.Email)
@@ -56,7 +57,7 @@ namespace StudentInfoSystemApp.Application.DTOs.StudentDTOs
 
             RuleFor(x => x.Status)
                 .NotEmpty().WithMessage("Status is required.")
-                .Must(BeValidStatus)
+                .Must(ValidationHelper.BeValidStatus)
                 .WithMessage("Status must be 'Active' or 'Inactive'.");
 
             RuleFor(i => i)
@@ -67,35 +68,11 @@ namespace StudentInfoSystemApp.Application.DTOs.StudentDTOs
 
             RuleFor(i => i.Photo)
                 .NotEmpty().WithMessage("Photo is required.")
-            .Must(BeValidFile).WithMessage("Invalid file type. Only .jpg, .jpeg, .png, or .gif are allowed.")
+            .Must(ValidationHelper.BeValidFile).WithMessage("Invalid file type. Only .jpg, .jpeg, .png, or .gif are allowed.")
             .When(i => i.Photo != null);
 
             RuleFor(x => x.ProgramID)
                 .GreaterThan(0).WithMessage("Program ID must be greater than 0.");
-        }
-
-        //Custom methods for Must section of validators
-        private bool BeValidGender(string? gender)
-        {
-            return string.Equals(gender, "Male", StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(gender, "Female", StringComparison.OrdinalIgnoreCase);
-        }
-        private bool BeValidStatus(string? status)
-        {
-            return string.Equals(status, "Active", StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(status, "Inactive", StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(status, "Graduated", StringComparison.OrdinalIgnoreCase);
-        }
-        private bool BeValidFile(IFormFile? file)
-        {
-            var validExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
-            var fileExtension = System.IO.Path.GetExtension(file.FileName).ToLower();
-            return validExtensions.Contains(fileExtension);
-        }
-        private bool BeAtLeast16YearsOld(DateTime dateOfBirth)
-        {
-            var minAllowedDate = DateTime.Now.AddYears(-16);
-            return dateOfBirth <= minAllowedDate;
         }
     }
 }

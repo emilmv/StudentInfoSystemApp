@@ -16,9 +16,9 @@ namespace StudentInfoSystemApp.Presentation.Controllers
         }
 
         [HttpGet("")]
-        public async Task<IActionResult> Get([FromQuery] int page = 1, [FromQuery] string searchInput = "")
+        public async Task<IActionResult> Get([FromQuery] int page = 1, [FromQuery] string searchInput = "",[FromQuery]int pageSize=3)
         {
-            return Ok(await _studentService.GetAllAsync(page, searchInput));
+            return Ok(await _studentService.GetAllAsync(page, searchInput,pageSize));
         }
 
         [HttpGet("{id}")]
@@ -37,6 +37,12 @@ namespace StudentInfoSystemApp.Presentation.Controllers
         public async Task<IActionResult> DeleteAsync(int? id)
         {
             return Ok(await _studentService.DeleteAsync(id));
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateAsync(int id, [FromForm] StudentUpdateDTO studentUpdateDTO)
+        {
+            return Ok(await _studentService.UpdateAsync(id, studentUpdateDTO));
         }
     }
 }
