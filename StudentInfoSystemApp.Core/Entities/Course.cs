@@ -12,6 +12,5 @@
         public Program? Program { get; set; }
         public List<Enrollment>? Enrollments { get; set; }
         public List<Schedule>? Schedules { get; set; }
-
     }
 }

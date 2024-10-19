@@ -24,6 +24,9 @@ namespace StudentInfoSystemApp.DataAccess.Data
         {
             modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
+            foreach (var relationship in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys()))
+                relationship.DeleteBehavior = DeleteBehavior.Restrict;
+
             // Seed Roles
             List<IdentityRole> roles = new List<IdentityRole>
             {

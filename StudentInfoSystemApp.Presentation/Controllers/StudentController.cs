@@ -16,9 +16,9 @@ namespace StudentInfoSystemApp.Presentation.Controllers
         }
 
         [HttpGet("")]
-        public async Task<IActionResult> Get([FromQuery] int page = 1, [FromQuery] string searchInput = "",[FromQuery]int pageSize=3)
+        public async Task<IActionResult> Get([FromQuery] int page = 1, [FromQuery] string searchInput = "", [FromQuery] int pageSize = 3)
         {
-            return Ok(await _studentService.GetAllAsync(page, searchInput,pageSize));
+            return Ok(await _studentService.GetAllAsync(page, searchInput, pageSize));
         }
 
         [HttpGet("{id}")]

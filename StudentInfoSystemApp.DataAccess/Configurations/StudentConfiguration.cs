@@ -47,8 +47,8 @@ namespace StudentInfoSystemApp.DataAccess.Configurations
 
             builder.HasOne(s => s.Program)
                 .WithMany(p => p.Students)
-                .HasForeignKey(s => s.ProgramID);
-            //.OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(s => s.ProgramID)
+            .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

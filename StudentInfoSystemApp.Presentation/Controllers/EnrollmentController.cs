@@ -16,9 +16,9 @@ namespace StudentInfoSystemApp.Presentation.Controllers
             _enrollmentService = enrollmentSealService;
         }
         [HttpGet("")]
-        public async Task<IActionResult> Get([FromQuery] int page = 1, [FromQuery] string searchInput = "")
+        public async Task<IActionResult> Get([FromQuery] int page = 1, [FromQuery] string searchInput = "", [FromQuery] int pageSize = 3)
         {
-            return Ok(await _enrollmentService.GetAllAsync(page, searchInput));
+            return Ok(await _enrollmentService.GetAllAsync(page, searchInput, pageSize));
         }
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int? id)

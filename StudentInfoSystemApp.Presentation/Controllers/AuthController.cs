@@ -35,10 +35,10 @@ namespace StudentInfoSystemApp.Presentation.Controllers
         }
 
         [HttpGet("users")]
-        [Authorize]
-        public async Task<IActionResult> Get([FromQuery] int page = 1, [FromQuery] string searchInput = "")
+        //[Authorize]
+        public async Task<IActionResult> Get([FromQuery] int page = 1, [FromQuery] string searchInput = "", [FromQuery] int pageSize = 3)
         {
-            return Ok(await _authService.GetAllAsync(page, searchInput));
+            return Ok(await _authService.GetAllAsync(page, searchInput,pageSize));
         }
         [HttpDelete("userId")]
         public async Task<IActionResult> Delete([FromBody] string userID)

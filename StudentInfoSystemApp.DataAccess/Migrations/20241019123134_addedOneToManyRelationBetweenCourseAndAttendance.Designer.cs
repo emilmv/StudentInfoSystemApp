@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StudentInfoSystemApp.DataAccess.Data;
 
@@ -11,9 +12,11 @@ using StudentInfoSystemApp.DataAccess.Data;
 namespace StudentInfoSystemApp.DataAccess.Migrations
 {
     [DbContext(typeof(StudentInfoSystemContext))]
-    partial class StudentInfoSystemContextModelSnapshot : ModelSnapshot
+    [Migration("20241019123134_addedOneToManyRelationBetweenCourseAndAttendance")]
+    partial class addedOneToManyRelationBetweenCourseAndAttendance
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -303,7 +306,7 @@ namespace StudentInfoSystemApp.DataAccess.Migrations
 
                     b.HasIndex("EnrollmentID");
 
-                    b.ToTable("Attendances", (string)null);
+                    b.ToTable("Attendances");
                 });
 
             modelBuilder.Entity("StudentInfoSystemApp.Core.Entities.Course", b =>
@@ -347,7 +350,7 @@ namespace StudentInfoSystemApp.DataAccess.Migrations
 
                     b.HasIndex("ProgramID");
 
-                    b.ToTable("Courses", (string)null);
+                    b.ToTable("Courses");
                 });
 
             modelBuilder.Entity("StudentInfoSystemApp.Core.Entities.Department", b =>
@@ -374,7 +377,7 @@ namespace StudentInfoSystemApp.DataAccess.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Departments", (string)null);
+                    b.ToTable("Departments");
                 });
 
             modelBuilder.Entity("StudentInfoSystemApp.Core.Entities.Enrollment", b =>
@@ -419,7 +422,7 @@ namespace StudentInfoSystemApp.DataAccess.Migrations
 
                     b.HasIndex("StudentID");
 
-                    b.ToTable("Enrollments", (string)null);
+                    b.ToTable("Enrollments");
                 });
 
             modelBuilder.Entity("StudentInfoSystemApp.Core.Entities.Instructor", b =>
@@ -473,7 +476,7 @@ namespace StudentInfoSystemApp.DataAccess.Migrations
 
                     b.HasIndex("DepartmentID");
 
-                    b.ToTable("Instructors", (string)null);
+                    b.ToTable("Instructors");
                 });
 
             modelBuilder.Entity("StudentInfoSystemApp.Core.Entities.Program", b =>
@@ -507,7 +510,7 @@ namespace StudentInfoSystemApp.DataAccess.Migrations
 
                     b.HasKey("ID");
 
-                    b.ToTable("Programs", (string)null);
+                    b.ToTable("Programs");
                 });
 
             modelBuilder.Entity("StudentInfoSystemApp.Core.Entities.Schedule", b =>
@@ -551,7 +554,7 @@ namespace StudentInfoSystemApp.DataAccess.Migrations
 
                     b.HasIndex("InstructorID");
 
-                    b.ToTable("Schedules", (string)null);
+                    b.ToTable("Schedules");
                 });
 
             modelBuilder.Entity("StudentInfoSystemApp.Core.Entities.Student", b =>
@@ -625,7 +628,7 @@ namespace StudentInfoSystemApp.DataAccess.Migrations
 
                     b.HasIndex("ProgramID");
 
-                    b.ToTable("Students", (string)null);
+                    b.ToTable("Students");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

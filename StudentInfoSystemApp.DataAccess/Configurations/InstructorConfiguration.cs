@@ -31,13 +31,13 @@ namespace StudentInfoSystemApp.DataAccess.Configurations
 
             builder.HasOne(i => i.Department)
                 .WithMany(d => d.Instructors)
-                .HasForeignKey(i => i.DepartmentID);
-            //.OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(i => i.DepartmentID)
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasMany(i => i.Schedules)
                 .WithOne(cs => cs.Instructor)
-                .HasForeignKey(cs => cs.InstructorID);
-            // .OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(cs => cs.InstructorID)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

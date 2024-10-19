@@ -9,7 +9,6 @@ using StudentInfoSystemApp.Core.Entities;
 using StudentInfoSystemApp.DataAccess.Data;
 using System.Data;
 using System.Globalization;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace StudentInfoSystemApp.Application.Services.Implementations
 {
@@ -78,8 +77,11 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
             var responseAttendance=await _studentInfoSystemContext
                 .Attendances
                 .Include(a=>a.Enrollment)
-                .SingleOrDefaultAsync
-                (a=>a.ID==attendance.ID);
+                .ThenInclude(ae=>ae.Student)
+                .Include(a=>a.Enrollment)
+                .ThenInclude(ae=>ae.Course)
+                .SingleOrDefaultAsync(a=>a.ID==attendance.ID);
+
             //Returning the ID of the created entity
             return new CreateResponseDTO<AttendanceReturnDTO>()
             {
@@ -146,9 +148,12 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
         public IQueryable<Attendance> CreateAttendanceQuery(string searchInput)
         {
             //Base query
-            var query = _studentInfoSystemContext.Attendances
+            var query =  _studentInfoSystemContext
+                .Attendances
                 .Include(a => a.Enrollment)
-                .ThenInclude(e => e.Student)
+                .ThenInclude(ae => ae.Student)
+                .Include(a => a.Enrollment)
+                .ThenInclude(ae => ae.Course)
                 .AsQueryable();
 
             //Search logic
@@ -168,6 +173,8 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
                 .Attendances
                 .Include(a => a.Enrollment)
                 .ThenInclude(e => e.Student)
+                .Include (a => a.Enrollment)
+                .ThenInclude(ae=>ae.Course)
                 .FirstOrDefaultAsync(a => a.ID == id);
 
             if (attendance is null) throw new CustomException(400, "ID", $"Attendance with ID of: '{id}' not found in the database");

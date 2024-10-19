@@ -8,7 +8,7 @@
         public string? Description { get; set; }
         public int Credits { get; set; }
         public ProgramInCourseReturnDTO? Program { get; set; }
-        public int EnrollmentCount { get; set; }
+        public int StudentCount { get; set; }
         public List<ScheduleInCourseReturnDTO>? Schedules { get; set; }
     }
     public class ProgramInCourseReturnDTO

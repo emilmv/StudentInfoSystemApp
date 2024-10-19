@@ -7,7 +7,6 @@ using StudentInfoSystemApp.Application.Exceptions;
 using StudentInfoSystemApp.Application.Services.Interfaces;
 using StudentInfoSystemApp.Core.Entities;
 using StudentInfoSystemApp.DataAccess.Data;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace StudentInfoSystemApp.Application.Services.Implementations
 {

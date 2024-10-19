@@ -19,13 +19,13 @@ namespace StudentInfoSystemApp.DataAccess.Configurations
 
             builder.HasOne(s => s.Course)
                 .WithMany(c => c.Schedules)
-                .HasForeignKey(s => s.CourseID);
-            //.OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(s => s.CourseID)
+            .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(s => s.Instructor)
                 .WithMany(i => i.Schedules)
-                .HasForeignKey(s => s.InstructorID);
-            //.OnDelete(DeleteBehavior.Restrict);
+                .HasForeignKey(s => s.InstructorID)
+            .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

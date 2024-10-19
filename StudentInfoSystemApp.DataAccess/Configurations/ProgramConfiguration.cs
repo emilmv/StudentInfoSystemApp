@@ -21,7 +21,7 @@ namespace StudentInfoSystemApp.DataAccess.Configurations
             builder.HasMany(p => p.Students)
                 .WithOne(s => s.Program)
                 .HasForeignKey(s => s.ProgramID)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasMany(p => p.Courses)
                 .WithOne(c => c.Program)

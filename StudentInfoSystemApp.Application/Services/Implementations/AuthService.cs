@@ -32,13 +32,8 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
 
         public async Task<string> RegisterAsync(RegisterDTO registerDTO)
         {
-            //Checking if username is available by Username
-            ApplicationUser existingUser = await _userManager.FindByNameAsync(registerDTO.Username);
-            if (existingUser != null) throw new CustomException(400, "Username", "Username is taken, please try a different Username");
-
-            //Checking if username is available by Email
-            existingUser = await _userManager.FindByEmailAsync(registerDTO.Email);
-            if (existingUser != null) throw new CustomException(400, "Email", "This email address has already been registered.");
+            //Checking if username is available by Username and Email
+            await CheckUserAvailabilityAsync(registerDTO.Username, registerDTO.Email);
 
             //Mapping dto to an object
             ApplicationUser newUser = _mapper.Map<ApplicationUser>(registerDTO);
@@ -79,14 +74,9 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
 
         public async Task<string> LoginAsync(LoginDTO loginDTO)
         {
-            //Checking by username
-            ApplicationUser existingUser = await _userManager.FindByNameAsync(loginDTO.UsernameOrEmail);
-            if (existingUser is null)
-                //Checking by email
-                existingUser = await _userManager.FindByEmailAsync(loginDTO.UsernameOrEmail);
-
-            if (existingUser is null) throw new CustomException(400, "Login Failed", "Incorrect username or password");
-
+            //Finding user by username or email
+            var existingUser=await FindUserByUsernameOrEmailAsync(loginDTO.UsernameOrEmail);
+            
             //Checking if password is correct
             bool isAuthenticated = await _userManager.CheckPasswordAsync(existingUser, loginDTO.Password);
             if (!isAuthenticated)
@@ -101,15 +91,14 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
 
             return _jwtService.GenerateToken(existingUser, userRoles.ToList());
         }
-
         public async Task<PaginationListDTO<UserReturnDTO>> GetAllAsync(int page = 1, string searchInput = "", int pageSize = 3)
         {
             //Getting all users
             var query = await _userManager.Users.ToListAsync();
 
-            var datas = query
-                .Skip((page - 1) * 2)
-                .Take(2)
+            //Applying pagination manually because paginationService works with IQueryable
+            var datas = query.Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToList();
 
             var totalCount = query.Count();
@@ -133,18 +122,34 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
                 Objects = objects
             };
         }
-
-        public async Task<bool> DeleteAsync(string? userId)
+        public async Task<bool> DeleteAsync(string? email)
         {
-            if (userId is null) throw new CustomException(400, "userID", "UserID is required");
+            //Deleting through email because userId is GUID
+            if (string.IsNullOrWhiteSpace(email))
+                throw new CustomException(400, "Email", "Email is required.");
 
-            var user = await _userManager.FindByIdAsync(userId);
+            // Get the current user's ID
+            var currentUserId = _userManager.GetUserId(_httpContextAccessor.HttpContext.User);
+            if (currentUserId is null)
+                throw new CustomException(400, "User not found", "Please log in to be able to use this operation.");
 
-            if (user == null)
-                throw new CustomException(400, "UserNotFound", $"User with ID of: '{userId}' not found in the database.");
+            // Check if the current user has the "Owner" role
+            var currentUser = await _userManager.FindByIdAsync(currentUserId);
+            var roles = await _userManager.GetRolesAsync(currentUser);
+            if (!roles.Contains("Owner"))
+                throw new CustomException(403, "Permission denied", "You do not have permission to delete users.");
 
-            var result = await _userManager.DeleteAsync(user);
+            // Find the user by email
+            var userToDelete = await _userManager.FindByEmailAsync(email);
+            if (userToDelete is null)
+                throw new CustomException(400, "User not found", $"User with email '{email}' not found in the database.");
 
+            // In case the owner decides to delete his own account
+            if (currentUserId == userToDelete.Id)
+                throw new CustomException(403, "Permission denied", "You cannot delete your own account.");
+
+            // Delete the user
+            var result = await _userManager.DeleteAsync(userToDelete);
             if (!result.Succeeded)
             {
                 var errors = result.Errors.Select(e => $"{e.Code}: {e.Description}");
@@ -153,7 +158,6 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
 
             return true;
         }
-
         public async Task<string> VerifyEmailAsync(string email, string token)
         {
             var user = await _userManager.FindByEmailAsync(email);
@@ -171,7 +175,6 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
 
             return "Email verification successful, you can close this window.";
         }
-
         public async Task<string> ResendVerificationEmailAsync(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
@@ -192,7 +195,6 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
 
             return "Email sent. Please check your email to confirm.";
         }
-
         public async Task<string> SendPasswordResetEmailAsync(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
@@ -210,7 +212,6 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
 
             return "Email sent, please check your email to confirm and reset your password";
         }
-
         public async Task<string> ResetPasswordAsync(string email, string token, ResetPasswordDTO resetPasswordDTO)
         {
             var user = await _userManager.FindByEmailAsync(email);
@@ -226,6 +227,34 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
             await _userManager.UpdateSecurityStampAsync(user);
 
             return "Password reset successful.";
+        }
+
+
+
+        //Private methods
+        public async Task CheckUserAvailabilityAsync(string username, string email)
+        {
+            //Checking for username
+            ApplicationUser? existingUserWithUsername = await _userManager.FindByNameAsync(username);
+            if (existingUserWithUsername != null) throw new CustomException(400, "Username", "Username is taken, please try a different Username");
+
+            //Checking for Email
+            ApplicationUser? existingUserWithEmail = await _userManager.FindByEmailAsync(email);
+            if (existingUserWithEmail != null) throw new CustomException(400, "Email", "This email address has already been registered.");
+        }
+        public async Task<ApplicationUser> FindUserByUsernameOrEmailAsync(string usernameOrEmail)
+        {
+            // Attempt to find the user by username
+            var existingUser = await _userManager.FindByNameAsync(usernameOrEmail);
+
+            // If not found, attempt to find by email
+            if (existingUser is null)
+                existingUser = await _userManager.FindByEmailAsync(usernameOrEmail);
+
+            if (existingUser is null)
+                throw new CustomException(400, "Login Failed", "Incorrect username or password");
+
+            return existingUser;
         }
     }
 }

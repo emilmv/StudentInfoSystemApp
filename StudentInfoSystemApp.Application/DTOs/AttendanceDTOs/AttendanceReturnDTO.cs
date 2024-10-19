@@ -13,5 +13,6 @@
         //Relations below
         public int StudentID { get; set; }
         public string? StudentFullName { get; set; }
+        public string? CourseName { get; set; }
     }
 }

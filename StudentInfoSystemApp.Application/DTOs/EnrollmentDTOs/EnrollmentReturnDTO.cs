@@ -8,7 +8,6 @@
         public string? Semester { get; set; }
         public StudentInEnrollmentReturnDTO? Student { get; set; }
         public CourseInEnrollmentReturnDTO? Course { get; set; }
-        public List<AttendanceInEnrollmentReturnDTO>? Attendances { get; set; }
     }
     public class StudentInEnrollmentReturnDTO
     {
@@ -29,11 +28,5 @@
         public string? CourseName { get; set; }
         public string? CourseCode { get; set; }
         public string? Description { get; set; }
-    }
-    public class AttendanceInEnrollmentReturnDTO
-    {
-        public int ID { get; set; }
-        public string? AttendanceDate { get; set; }
-        public string? Status { get; set; }
     }
 }

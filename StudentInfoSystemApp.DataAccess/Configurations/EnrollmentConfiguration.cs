@@ -20,18 +20,18 @@ namespace StudentInfoSystemApp.DataAccess.Configurations
 
             builder.HasOne(e => e.Student)
                 .WithMany(s => s.Enrollments)
-                .HasForeignKey(e => e.StudentID);
-            //.OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(e => e.StudentID)
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasOne(e => e.Course)
                 .WithMany(c => c.Enrollments)
-                .HasForeignKey(e => e.CourseID);
-            //.OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(e => e.CourseID)
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasMany(e => e.Attendances)
                 .WithOne(a => a.Enrollment)
-                .HasForeignKey(a => a.EnrollmentID);
-            //.OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(a => a.EnrollmentID)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
