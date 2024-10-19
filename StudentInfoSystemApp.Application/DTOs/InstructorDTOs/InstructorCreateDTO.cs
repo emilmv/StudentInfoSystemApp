@@ -6,14 +6,14 @@ namespace StudentInfoSystemApp.Application.DTOs.InstructorDTOs
 {
     public class InstructorCreateDTO
     {
-        public string? FirstName { get; set; }
-        public string? LastName { get; set; }
-        public string? Email { get; set; }
-        public string? PhoneNumber { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public string PhoneNumber { get; set; }
         public DateTime HireDate { get; set; }
         //iformfile
         [FromForm]
-        public IFormFile? Photo { get; set; }
+        public IFormFile Photo { get; set; }
         public int DepartmentID { get; set; }
     }
     public class InstructorCreateDTOValidator : AbstractValidator<InstructorCreateDTO>
@@ -56,7 +56,7 @@ namespace StudentInfoSystemApp.Application.DTOs.InstructorDTOs
             RuleFor(i => i.DepartmentID)
                 .GreaterThan(0).WithMessage("Department ID must be greater than 0.");
         }
-        private bool BeValidFile(IFormFile? file)
+        private bool BeValidFile(IFormFile file)
         {
             var validExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
             var fileExtension = System.IO.Path.GetExtension(file.FileName).ToLower();

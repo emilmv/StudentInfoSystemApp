@@ -7,6 +7,6 @@
         public int CurrentPage { get; set; }
         public bool HasPreviousPage => CurrentPage > 1;
         public bool HasNextPage => (CurrentPage * PageSize) < TotalCount;
-        public List<T>? Objects { get; set; }
+        public List<T> Objects { get; set; }
     }
 }

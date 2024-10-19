@@ -25,7 +25,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
         public async Task<PaginationListDTO<CourseReturnDTO>> GetAllAsync(int page = 1, string searchInput = "", int pageSize = 3)
         {
             //Extracting query to not overload requests
-            var query = CreateCourseQuery(searchInput);
+            var query = await CreateCourseQueryAsync(searchInput);
 
             //Pagination
             var paginatedCourseDatas = await _paginationService.ApplyPaginationAsync(query, page, pageSize);
@@ -137,7 +137,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
 
 
         //Private methods
-        public IQueryable<Course> CreateCourseQuery(string searchInput)
+        private async Task<IQueryable<Course>> CreateCourseQueryAsync(string searchInput)
         {
             var query = _studentInfoSystemContext.Courses
                 .Include(c => c.Program)
@@ -153,6 +153,11 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
                     c.Description.ToLower().Contains(searchInput.ToLower())
                 );
             }
+
+            var results = await query.ToListAsync();
+
+            if (!results.Any())
+                throw new CustomException(404, "Nothing found", "No records were found matching the search criteria.");
             return query;
         }
         public async Task<Course> GetCourseByIdAsync(int id)

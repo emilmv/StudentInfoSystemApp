@@ -25,7 +25,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
         public async Task<PaginationListDTO<ScheduleReturnDTO>> GetAllAsync(int page = 1, string searchInput = "", int pageSize = 3)
         {
             //Extracting query to not overload requests
-            var query = CreateScheduleQuery(searchInput);
+            var query = await CreateScheduleQueryAsync(searchInput);
 
             //Applying Pagination logic
             var paginatedSchedules = await _paginationService.ApplyPaginationAsync(query, page, pageSize);
@@ -161,7 +161,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
 
 
         //Private methods to refactor main methods
-        private IQueryable<Schedule> CreateScheduleQuery(string searchInput)
+        private async Task<IQueryable<Schedule>> CreateScheduleQueryAsync(string searchInput)
         {
             var query = _studentInfoSystemContext
                 .Schedules
@@ -184,6 +184,11 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
                     ((s.Instructor.FirstName ?? "") + " " + (s.Instructor.LastName ?? "")).ToLower().Contains(searchInput)
                 );
             }
+            var results = await query.ToListAsync();
+
+            if (!results.Any())
+                throw new CustomException(404, "Nothing found", "No records were found matching the search criteria.");
+
             return query;
         }
         private async Task<List<Schedule>> ApplyPaginationAsync(IQueryable<Schedule> query, int page, int pageSize)
@@ -193,7 +198,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
                 .Take(pageSize)
                 .ToListAsync();
         }
-        private async Task<Schedule?> FindScheduleByIdAsync(int id)
+        private async Task<Schedule> FindScheduleByIdAsync(int id)
         {
             return await _studentInfoSystemContext
                 .Schedules

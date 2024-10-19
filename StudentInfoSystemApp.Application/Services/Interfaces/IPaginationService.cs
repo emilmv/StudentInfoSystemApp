@@ -1,4 +1,6 @@
-﻿namespace StudentInfoSystemApp.Application.Services.Interfaces
+﻿using StudentInfoSystemApp.Application.DTOs.PaginationDTOs;
+
+namespace StudentInfoSystemApp.Application.Services.Interfaces
 {
     public interface IPaginationService<T>
     {

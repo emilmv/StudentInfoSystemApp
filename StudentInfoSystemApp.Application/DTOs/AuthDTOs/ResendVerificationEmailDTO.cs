@@ -4,7 +4,7 @@ namespace StudentInfoSystemApp.Application.DTOs.AuthDTOs
 {
     public class ResendVerificationEmailDTO
     {
-        public string? Email { get; set; }
+        public string Email { get; set; }
     }
     public class ResendVerificationEmailDTOValidator : AbstractValidator<ResendVerificationEmailDTO>
     {

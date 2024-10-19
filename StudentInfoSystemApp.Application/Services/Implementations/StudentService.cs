@@ -27,7 +27,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
         public async Task<PaginationListDTO<StudentReturnDTO>> GetAllAsync(int page = 1, string searchInput = "", int pageSize = 3)
         {
             //Creating the query based on searchInput
-            var query = CreateStudentQuery(searchInput);
+            var query = await CreateStudentQueryAsync(searchInput);
 
             //Applying Pagination logic
             var paginatedStudents = await _paginationService.ApplyPaginationAsync(query, page, pageSize);
@@ -148,7 +148,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
 
 
         //Private methods to refactor main methods
-        private IQueryable<Student> CreateStudentQuery(string searchInput)
+        private async Task<IQueryable<Student>> CreateStudentQueryAsync(string searchInput)
         {
             var query = _studentInfoSystemContext
                 .Students
@@ -180,6 +180,10 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
                         (s.Program != null && (s.Program.ProgramName ?? "").ToLower().Contains(searchInput)));
                 }
             }
+            var results = await query.ToListAsync();
+
+            if (!results.Any())
+                throw new CustomException(404, "Nothing found", "No records were found matching the search criteria.");
 
             return query;
         }

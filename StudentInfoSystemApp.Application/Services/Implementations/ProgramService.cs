@@ -25,7 +25,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
         public async Task<PaginationListDTO<ProgramReturnDTO>> GetAllAsync(int page = 1, string searchInput = "", int pageSize = 3)
         {
             //Extracting query to not overload requests
-            var query =CreateProgramQuery(searchInput);
+            var query =await CreateProgramQueryAsync(searchInput);
 
             //Applying Pagination logic
             var paginatedPrograms = await _paginationService.ApplyPaginationAsync(query, page, pageSize);
@@ -125,7 +125,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
 
 
         //Private methods
-        private IQueryable<Program> CreateProgramQuery(string searchInput)
+        private async Task<IQueryable<Program>> CreateProgramQueryAsync(string searchInput)
         {
             var query = _studentInfoSystemContext
                 .Programs
@@ -149,10 +149,13 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
                     ))
                 );
             }
+            var results = await query.ToListAsync();
 
+            if (!results.Any())
+                throw new CustomException(404, "Nothing found", "No records were found matching the search criteria.");
             return query;
         }
-        private async Task<Program?>FindProgramByIdAsync(int id)
+        private async Task<Program>FindProgramByIdAsync(int id)
         {
             return await _studentInfoSystemContext
                 .Programs

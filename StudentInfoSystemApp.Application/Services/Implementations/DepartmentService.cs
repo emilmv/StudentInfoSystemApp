@@ -27,7 +27,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
         public async Task<PaginationListDTO<DepartmentReturnDTO>> GetAllAsync(int page = 1, string searchInput = "", int pageSize = 3)
         {
             //Extracting query to not overload requests
-            var query = CreateDepartmentQuery(searchInput);
+            var query = await CreateDepartmentQueryAsync(searchInput);
 
             //Pagination
             var paginatedDepartmentDatas = await _paginationService.ApplyPaginationAsync(query, page, pageSize);
@@ -90,20 +90,20 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
             //Returning true if delete successful
             return true;
         }
-        public async Task<UpdateResponseDTO<DepartmentReturnDTO>> UpdateAsync(int? id, string? departmentName)
+        public async Task<UpdateResponseDTO<DepartmentReturnDTO>> UpdateAsync(int? id, string departmentName)
         {
             //Checking if ID from body is provided
             if (id is null) throw new CustomException(400, "Department ID", "Department ID must not be empty");
 
             //Finding relevant Department through ID
-            var existingDepartment=await GetDepartmentByIdAsync(id.Value);
+            var existingDepartment = await GetDepartmentByIdAsync(id.Value);
 
             //Checking if DepartmentName is provided
             if (string.IsNullOrWhiteSpace(departmentName) || !Regex.IsMatch(departmentName, "^[a-zA-Z0-9 ]*$")) throw new CustomException(400, "Invalid Department Name", "Department name can only contain letters, numbers, and spaces.");
 
             //Checking for duplication
-            await EnsureDepartmentIsNotDuplicateAsync(existingDepartment.ID,departmentName);
-           
+            await EnsureDepartmentIsNotDuplicateAsync(existingDepartment.ID, departmentName);
+
             //Changing name
             existingDepartment.DepartmentName = departmentName.FirstCharToUpper();
 
@@ -123,7 +123,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
 
 
         //Private methods
-        public IQueryable<Department> CreateDepartmentQuery(string searchInput)
+        private async Task<IQueryable<Department>> CreateDepartmentQueryAsync(string searchInput)
         {
             var query = _studentInfoSystemContext.Departments
                 .Include(d => d.Instructors)
@@ -133,6 +133,10 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
             if (!string.IsNullOrWhiteSpace(searchInput.Trim().ToLower()))
                 query = query.Where(d => d.DepartmentName.Trim().ToLower().Contains(searchInput.Trim().ToLower()));
 
+            var results = await query.ToListAsync();
+
+            if (!results.Any())
+                throw new CustomException(404, "Nothing found", "No records were found matching the search criteria.");
             return query;
         }
         private async Task<Department> GetDepartmentByIdAsync(int id)
@@ -143,7 +147,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
                 .FirstOrDefaultAsync(d => d.ID == id);
 
             if (department is null) throw new CustomException(400, "ID", $"Department with ID of: '{id}' not found in the database.");
-            
+
             return department;
         }
         private async Task EnsureDepartmentDoesNotExistAsync(string departmentName)
@@ -152,7 +156,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
             if (existingDepartment != null)
                 throw new CustomException(400, "DepartmentName", $"A Department with the name of: '{departmentName}' already exists in the database.");
         }
-        private async Task EnsureDepartmentIsNotDuplicateAsync(int departmentId,string departmentName)
+        private async Task EnsureDepartmentIsNotDuplicateAsync(int departmentId, string departmentName)
         {
             var duplicateDepartment = await _studentInfoSystemContext.Departments.FirstOrDefaultAsync(d => d.DepartmentName.Trim().ToLower().Equals(departmentName.Trim().ToLower()));
             if (duplicateDepartment != null && duplicateDepartment.ID != departmentId) throw new CustomException(400, "Department Name", $"A department with name of: '{departmentName}' already exists in the database");

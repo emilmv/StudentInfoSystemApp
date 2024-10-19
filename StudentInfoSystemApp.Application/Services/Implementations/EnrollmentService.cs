@@ -25,7 +25,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
         public async Task<PaginationListDTO<EnrollmentReturnDTO>> GetAllAsync(int page = 1, string searchInput = "", int pageSize = 3)
         {
             //Extracting query to not overload requests
-            var query = CreateEnrollmentQuery(searchInput);
+            var query = await CreateEnrollmentQueryAsync(searchInput);
 
             //Applying pagination
             var pagedEnrollmentDatas = await _paginationService.ApplyPaginationAsync(query, page, pageSize);
@@ -138,7 +138,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
 
 
         //Private methods
-        public IQueryable<Enrollment> CreateEnrollmentQuery(string searchInput)
+        private async Task<IQueryable<Enrollment>> CreateEnrollmentQueryAsync(string searchInput)
         {
             //Base query
             var query = _studentInfoSystemContext
@@ -176,6 +176,10 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
                     );
                 }
             }
+            var results = await query.ToListAsync();
+
+            if (!results.Any())
+                throw new CustomException(404, "Nothing found", "No records were found matching the search criteria.");
             return query;
         }
         private async Task<Enrollment> GetEnrollmentByIdAsync(int id)

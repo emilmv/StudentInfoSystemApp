@@ -13,7 +13,7 @@ namespace StudentInfoSystemApp.DataAccess.Migrations
 {
     [DbContext(typeof(StudentInfoSystemContext))]
     [Migration("20240918075704_initial")]
-    partial class initial
+    partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

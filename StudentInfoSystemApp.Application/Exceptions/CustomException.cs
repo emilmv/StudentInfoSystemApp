@@ -3,8 +3,8 @@
     public class CustomException : ApplicationException
     {
         public int StatusCode { get; set; }
-        public string? ErrorMessage { get; set; }
-        public Dictionary<string, string>? Errors { get; set; } = new();
+        public string ErrorMessage { get; set; }
+        public Dictionary<string, string> Errors { get; set; } = new();
         public CustomException(int code, string message)
         {
             StatusCode = code;

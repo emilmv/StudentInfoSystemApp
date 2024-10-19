@@ -4,9 +4,9 @@ namespace StudentInfoSystemApp.Application.DTOs.ScheduleDTOs
 {
     public class ScheduleUpdateDTO
     {
-        public string? Semester { get; set; }
-        public string? ClassTime { get; set; }
-        public string? Classroom { get; set; }
+        public string Semester { get; set; }
+        public string ClassTime { get; set; }
+        public string Classroom { get; set; }
         public int? CourseID { get; set; }
         public int? InstructorID { get; set; }
     }
@@ -35,7 +35,7 @@ namespace StudentInfoSystemApp.Application.DTOs.ScheduleDTOs
                 .GreaterThan(0).WithMessage("Instructor ID must be greater than 0.")
                 .When(s => s.InstructorID.HasValue);
         }
-        private bool BeValidSemester(string? semester)
+        private bool BeValidSemester(string semester)
         {
             return string.Equals(semester, "Fall", StringComparison.OrdinalIgnoreCase) ||
                    string.Equals(semester, "Spring", StringComparison.OrdinalIgnoreCase) ||
