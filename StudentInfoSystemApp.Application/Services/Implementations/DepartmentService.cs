@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using StudentInfoSystemApp.Application.DTOs.CourseDTOs;
 using StudentInfoSystemApp.Application.DTOs.DepartmentDTOs;
 using StudentInfoSystemApp.Application.DTOs.PaginationDTOs;
 using StudentInfoSystemApp.Application.DTOs.ResponseDTOs;
@@ -42,7 +43,6 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
                 Objects = _mapper.Map<List<DepartmentReturnDTO>>(paginatedDepartmentDatas)
             };
         }
-
         public async Task<DepartmentReturnDTO> GetByIdAsync(int? id)
         {
             //Validating ID
@@ -54,7 +54,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
             //Return DTO
             return _mapper.Map<DepartmentReturnDTO>(department);
         }
-        public async Task<int> CreateAsync(DepartmentCreateDTO departmentCreateDTO)
+        public async Task<CreateResponseDTO<DepartmentReturnDTO>> CreateAsync(DepartmentCreateDTO departmentCreateDTO)
         {
             //Checking if Department exists in the database
             await EnsureDepartmentDoesNotExistAsync(departmentCreateDTO.DepartmentName);
@@ -67,7 +67,12 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
             await _studentInfoSystemContext.SaveChangesAsync();
 
             //Returning the ID of the created entity
-            return department.ID;
+            return new CreateResponseDTO<DepartmentReturnDTO>()
+            {
+                Response = true,
+                CreationDate = DateTime.Now.ToShortDateString(),
+                Objects = _mapper.Map<DepartmentReturnDTO>(department)
+            };
         }
         public async Task<bool> DeleteAsync(int? id)
         {

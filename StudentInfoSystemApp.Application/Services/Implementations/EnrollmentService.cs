@@ -51,7 +51,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
             //Returning DTO
             return _mapper.Map<EnrollmentReturnDTO>(enrollment);
         }
-        public async Task<int> CreateAsync(EnrollmentCreateDTO enrollmentCreateDTO)
+        public async Task<CreateResponseDTO<EnrollmentReturnDTO>> CreateAsync(EnrollmentCreateDTO enrollmentCreateDTO)
         {
             //Checking if Enrollment is duplicate
             await EnsureEnrollmentDoesNotExistAsync(enrollmentCreateDTO.EnrollmentDate, enrollmentCreateDTO.StudentID);
@@ -70,7 +70,12 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
             await _studentInfoSystemContext.SaveChangesAsync();
 
             //Returning the ID of the created entity
-            return enrollment.ID;
+            return new CreateResponseDTO<EnrollmentReturnDTO>()
+            {
+                Response = true,
+                CreationDate = DateTime.Now.ToShortDateString(),
+                Objects = _mapper.Map<EnrollmentReturnDTO>(enrollment)
+            };
         }
         public async Task<bool> DeleteAsync(int? id)
         {
