@@ -7,8 +7,6 @@ using StudentInfoSystemApp.Application.Exceptions;
 using StudentInfoSystemApp.Application.Services.Interfaces;
 using StudentInfoSystemApp.Core.Entities;
 using StudentInfoSystemApp.DataAccess.Data;
-using System.Data;
-using System.Globalization;
 
 namespace StudentInfoSystemApp.Application.Services.Implementations
 {
@@ -27,7 +25,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
         public async Task<PaginationListDTO<AttendanceReturnDTO>> GetAllAsync(int page = 1, string searchInput = "", int pageSize = 3)
         {
             //Extracting query to not overload requests
-            var query =await CreateAttendanceQueryAsync(searchInput);
+            var query =await AttendanceHelper.CreateAttendanceQueryAsync(_studentInfoSystemContext,searchInput);
 
             //Pagination
             var pagedAttendanceDatas = await _paginationService.ApplyPaginationAsync(query, page, pageSize);
@@ -48,18 +46,18 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
             if (id is null) throw new CustomException(400, "ID", "ID must not be empty");
 
             //Getting the Attendance
-            var attendance = await GetAttendanceByIdAsync(id.Value);
+            var ResponseAttendance = await AttendanceHelper.GetResponseAttendanceAsync(_studentInfoSystemContext, id.Value);
 
             //Returning DTO
-            return _mapper.Map<AttendanceReturnDTO>(attendance);
+            return _mapper.Map<AttendanceReturnDTO>(ResponseAttendance);
         }
         public async Task<CreateResponseDTO<AttendanceReturnDTO>> CreateAsync(AttendanceCreateDTO attendanceCreateDTO)
         {
             //Checking if Attendance is duplicate
-            await EnsureAttendanceDoesNotExistAsync(attendanceCreateDTO.AttendanceDate, attendanceCreateDTO.EnrollmentID);
+            await AttendanceHelper.EnsureAttendanceDoesNotExistAsync(_studentInfoSystemContext,attendanceCreateDTO.AttendanceDate, attendanceCreateDTO.EnrollmentID);
 
             //Finding relevant Enrollment
-            await EnsureEnrollmentExistsAsync(attendanceCreateDTO.EnrollmentID);
+            await AttendanceHelper.EnsureEnrollmentExistsAsync(_studentInfoSystemContext,attendanceCreateDTO.EnrollmentID);
 
             //Validating AttendanceDate
             AttendanceHelper.ValidateAttendanceDate(attendanceCreateDTO.AttendanceDate);
@@ -74,13 +72,8 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
             await _studentInfoSystemContext.Attendances.AddAsync(attendance);
             await _studentInfoSystemContext.SaveChangesAsync();
 
-            var responseAttendance = await _studentInfoSystemContext
-                .Attendances
-                .Include(a => a.Enrollment)
-                .ThenInclude(ae => ae.Student)
-                .Include(a => a.Enrollment)
-                .ThenInclude(ae => ae.Course)
-                .SingleOrDefaultAsync(a => a.ID == attendance.ID);
+            //Getting responseDTO
+            var responseAttendance = await AttendanceHelper.GetResponseAttendanceAsync(_studentInfoSystemContext,attendance.ID);
 
             //Returning the ID of the created entity
             return new CreateResponseDTO<AttendanceReturnDTO>()
@@ -96,33 +89,36 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
             if (id is null) throw new CustomException(400, "Attendance ID", "Attendance ID must not be empty");
 
             //Checking if an attendance with provided ID exists
-            var existingAttendance = await GetAttendanceByIdAsync(id.Value);
+            var existingAttendance = await AttendanceHelper.GetAttendanceByIdAsync(_studentInfoSystemContext,id.Value);
 
             //Checking if Date is changed
-            UpdateAttendanceDateAsync(existingAttendance, attendanceUpdateDTO);
+            AttendanceHelper.UpdateAttendanceDate(existingAttendance, attendanceUpdateDTO);
 
             //Checking if EnrollmentID is changed to validate existence
-            await UpdateEnrollmentIdAsync(existingAttendance, attendanceUpdateDTO);
+            await AttendanceHelper.UpdateEnrollmentIdAsync(_studentInfoSystemContext,existingAttendance, attendanceUpdateDTO);
 
             //Checking if an Attendance with same date and Enrollment ID already exists
-            await EnsureAttendanceIsNotDuplicateAsync(existingAttendance, attendanceUpdateDTO);
+            await AttendanceHelper.EnsureAttendanceIsNotDuplicateAsync(_studentInfoSystemContext,existingAttendance, attendanceUpdateDTO);
 
             //Checking if Status is changed
-            UpdateStatus(existingAttendance, attendanceUpdateDTO);
+            AttendanceHelper.UpdateStatus(existingAttendance, attendanceUpdateDTO);
 
             //Updating fields
-            existingAttendance.Status = attendanceUpdateDTO.Status;
+            existingAttendance.Status = attendanceUpdateDTO.Status.FirstCharToUpper();
             existingAttendance.EnrollmentID = attendanceUpdateDTO.EnrollmentID.GetValueOrDefault();
 
             // Save changes
             _studentInfoSystemContext.Update(existingAttendance);
             await _studentInfoSystemContext.SaveChangesAsync();
 
+            //Getting responseDTO
+            var responseAttendance = await AttendanceHelper.GetResponseAttendanceAsync(_studentInfoSystemContext, existingAttendance.ID);
+
             return new UpdateResponseDTO<AttendanceReturnDTO>
             {
                 Response = true,
                 UpdateDate = DateTime.Now.ToShortDateString(),
-                Objects = _mapper.Map<AttendanceReturnDTO>(existingAttendance)
+                Objects = _mapper.Map<AttendanceReturnDTO>(responseAttendance)
             };
         }
         public async Task<bool> DeleteAsync(int? id)
@@ -140,123 +136,6 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
 
             //Returning true if delete successful
             return true;
-        }
-
-
-
-        //Private methods
-        private async Task<IQueryable<Attendance>> CreateAttendanceQueryAsync(string searchInput)
-        {
-            //Base query
-            var query = _studentInfoSystemContext
-                .Attendances
-                .Include(a => a.Enrollment)
-                .ThenInclude(ae => ae.Student)
-                .Include(a => a.Enrollment)
-                .ThenInclude(ae => ae.Course)
-                .AsQueryable();
-
-            //Search logic
-            if (!string.IsNullOrWhiteSpace(searchInput))
-            {
-                if (DateTime.TryParseExact(searchInput, "dd/MM/yyyy", null, System.Globalization.DateTimeStyles.None, out var searchDate))
-                    query = query.Where(e => e.AttendanceDate.Date == searchDate.Date);
-                else
-                {
-                    searchInput = searchInput.Trim().ToLower();
-                    query = query.Where(s =>
-                        (s.Enrollment.Student.FirstName ?? "").ToLower().Contains(searchInput) ||
-                        (s.Enrollment.Student.LastName ?? "").ToLower().Contains(searchInput) ||
-                        ((s.Enrollment.Student.FirstName ?? "") + " " + (s.Enrollment.Student.LastName ?? "")).ToLower().Contains(searchInput));
-                }
-            }
-            var results = await query.ToListAsync();
-            if (!results.Any())
-                throw new CustomException(404, "Nothing found", "No records were found matching the search criteria.");
-            return query;
-        }
-        public async Task<Attendance> GetAttendanceByIdAsync(int id)
-        {
-            var attendance = await _studentInfoSystemContext
-                .Attendances
-                .Include(a => a.Enrollment)
-                .ThenInclude(e => e.Student)
-                .Include(a => a.Enrollment)
-                .ThenInclude(ae => ae.Course)
-                .FirstOrDefaultAsync(a => a.ID == id);
-
-            if (attendance is null) throw new CustomException(400, "ID", $"Attendance with ID of: '{id}' not found in the database");
-
-            return attendance;
-        }
-        public async Task EnsureAttendanceDoesNotExistAsync(DateTime attendanceDate, int enrollmentID)
-        {
-            var existingAttendance = await _studentInfoSystemContext.Attendances.SingleOrDefaultAsync(a => a.AttendanceDate.Date == attendanceDate.Date && a.EnrollmentID == enrollmentID);
-            if (existingAttendance != null)
-                throw new CustomException(400, "Attendance", $"Attendance with date of: '{attendanceDate.ToShortDateString()}' and Enrollment ID of: '{enrollmentID}' already exists in the database");
-        }
-        public async Task EnsureEnrollmentExistsAsync(int enrollmentID)
-        {
-            var enrollment = await _studentInfoSystemContext.Enrollments.SingleOrDefaultAsync(e => e.ID == enrollmentID);
-            if (enrollment is null)
-                throw new CustomException(400, "ID", $"Enrollment with ID of:' {enrollmentID}' not found in the database");
-        }
-        public void UpdateAttendanceDateAsync(Attendance existingAttendance, AttendanceUpdateDTO attendanceUpdateDTO)
-        {
-            if (!string.IsNullOrWhiteSpace(attendanceUpdateDTO.AttendanceDate))
-            {
-                if (DateTime.TryParseExact(attendanceUpdateDTO.AttendanceDate,
-                    "dd/MM/yyyy",
-                    CultureInfo.InvariantCulture,
-                    DateTimeStyles.None,
-                    out DateTime parsedDate))
-                {
-                    if (parsedDate.Date > DateTime.Now.Date)
-                        throw new CustomException(400, "Attendance Date", "Attendance date can not be in the future.");
-                    existingAttendance.AttendanceDate = parsedDate;
-                }
-                else
-                    throw new CustomException(400, "Attendance Date", "Invalid date format. Please use dd/MM/yyyy.");
-            }
-        }
-        public async Task UpdateEnrollmentIdAsync(Attendance existingAttendance, AttendanceUpdateDTO attendanceUpdateDTO)
-        {
-            if (existingAttendance.EnrollmentID != attendanceUpdateDTO.EnrollmentID)
-            {
-                attendanceUpdateDTO.EnrollmentID = (attendanceUpdateDTO.EnrollmentID == null || attendanceUpdateDTO.EnrollmentID == 0)
-                    ? existingAttendance.EnrollmentID
-                    : attendanceUpdateDTO.EnrollmentID;
-
-                // checking if the EnrollmentID has changed and validate it
-                if (existingAttendance.EnrollmentID != attendanceUpdateDTO.EnrollmentID)
-                {
-                    var existingEnrollment = await _studentInfoSystemContext.Enrollments
-                        .SingleOrDefaultAsync(e => e.ID == attendanceUpdateDTO.EnrollmentID);
-
-                    if (existingEnrollment is null)
-                        throw new CustomException(400, "Enrollment ID", $"An Enrollment with ID of: '{attendanceUpdateDTO.EnrollmentID}' not found in the database");
-                }
-            }
-        }
-        public async Task EnsureAttendanceIsNotDuplicateAsync(Attendance existingAttendance, AttendanceUpdateDTO attendanceUpdateDTO)
-        {
-            var duplicateAttendance = await _studentInfoSystemContext.Attendances.SingleOrDefaultAsync(a => a.AttendanceDate.Date == existingAttendance.AttendanceDate.Date && a.EnrollmentID == existingAttendance.EnrollmentID);
-            if (duplicateAttendance != null && duplicateAttendance.ID != existingAttendance.ID)
-                throw new CustomException(400, "Duplicate Attendance", "An attendance with same ProgramID and AttendanceDate already exists in the database");
-        }
-        public void UpdateStatus(Attendance existingAttendance, AttendanceUpdateDTO attendanceUpdateDTO)
-        {
-            if (existingAttendance.Status != attendanceUpdateDTO.Status)
-            {
-                //Keeping previous if string is empty or null
-                attendanceUpdateDTO.Status = string.IsNullOrWhiteSpace(attendanceUpdateDTO.Status)
-                ? existingAttendance.Status
-                : attendanceUpdateDTO.Status;
-
-                //Validating if changed
-                if (attendanceUpdateDTO.Status != existingAttendance.Status)
-                    AttendanceHelper.ValidateStatus(attendanceUpdateDTO.Status);
-            }
         }
     }
 }

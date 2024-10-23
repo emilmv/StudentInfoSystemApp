@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using StudentInfoSystemApp.Application.DTOs.AuthDTOs;
 using StudentInfoSystemApp.Application.DTOs.PaginationDTOs;
 using StudentInfoSystemApp.Application.Exceptions;
+using StudentInfoSystemApp.Application.Helpers.EntityHelpers;
 using StudentInfoSystemApp.Application.Services.Interfaces;
 using StudentInfoSystemApp.Core.Entities;
 
@@ -33,7 +33,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
         public async Task<string> RegisterAsync(RegisterDTO registerDTO)
         {
             //Checking if username is available by Username and Email
-            await CheckUserAvailabilityAsync(registerDTO.Username, registerDTO.Email);
+            await AuthHelper.CheckUserAvailabilityAsync(_userManager,registerDTO.Username, registerDTO.Email);
 
             //Mapping dto to an object
             ApplicationUser newUser = _mapper.Map<ApplicationUser>(registerDTO);
@@ -71,11 +71,10 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
 
             return "Registration successful. Please check your email to confirm.";
         }
-
         public async Task<string> LoginAsync(LoginDTO loginDTO)
         {
             //Finding user by username or email
-            var existingUser=await FindUserByUsernameOrEmailAsync(loginDTO.UsernameOrEmail);
+            var existingUser=await AuthHelper.FindUserByUsernameOrEmailAsync(_userManager,loginDTO.UsernameOrEmail);
             
             //Checking if password is correct
             bool isAuthenticated = await _userManager.CheckPasswordAsync(existingUser, loginDTO.Password);
@@ -93,8 +92,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
         }
         public async Task<PaginationListDTO<UserReturnDTO>> GetAllAsync(int page = 1, string searchInput = "", int pageSize = 3)
         {
-            //Getting all users
-            var query = await _userManager.Users.ToListAsync();
+            var query = await AuthHelper.CreateAuthQueryAsync(_userManager, searchInput);
 
             //Applying pagination manually because paginationService works with IQueryable
             var datas = query.Skip((page - 1) * pageSize)
@@ -122,7 +120,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
                 Objects = objects
             };
         }
-        public async Task<bool> DeleteAsync(string? email)
+        public async Task<bool> DeleteAsync(string email)
         {
             //Deleting through email because userId is GUID
             if (string.IsNullOrWhiteSpace(email))
@@ -227,34 +225,6 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
             await _userManager.UpdateSecurityStampAsync(user);
 
             return "Password reset successful.";
-        }
-
-
-
-        //Private methods
-        public async Task CheckUserAvailabilityAsync(string username, string email)
-        {
-            //Checking for username
-            ApplicationUser? existingUserWithUsername = await _userManager.FindByNameAsync(username);
-            if (existingUserWithUsername != null) throw new CustomException(400, "Username", "Username is taken, please try a different Username");
-
-            //Checking for Email
-            ApplicationUser? existingUserWithEmail = await _userManager.FindByEmailAsync(email);
-            if (existingUserWithEmail != null) throw new CustomException(400, "Email", "This email address has already been registered.");
-        }
-        public async Task<ApplicationUser> FindUserByUsernameOrEmailAsync(string usernameOrEmail)
-        {
-            // Attempt to find the user by username
-            var existingUser = await _userManager.FindByNameAsync(usernameOrEmail);
-
-            // If not found, attempt to find by email
-            if (existingUser is null)
-                existingUser = await _userManager.FindByEmailAsync(usernameOrEmail);
-
-            if (existingUser is null)
-                throw new CustomException(400, "Login Failed", "Incorrect username or password");
-
-            return existingUser;
         }
     }
 }

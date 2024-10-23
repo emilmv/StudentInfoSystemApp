@@ -28,7 +28,7 @@ namespace StudentInfoSystemApp.Application.Helpers.MapProfiles
 
             //Map for CreateDTO
             CreateMap<StudentCreateDTO, Student>()
-                .ForMember(d => d.Photo, map => map.MapFrom(s => s.Photo.Save(s.FirstName.ToLower(), s.LastName.ToLower(), Directory.GetCurrentDirectory(), "images")))
+                .ForMember(d => d.Photo, map => map.MapFrom(s => s.PhotoFile.Save(s.FirstName.ToLower(), s.LastName.ToLower(), Directory.GetCurrentDirectory(), "images")))
                 .ForMember(d => d.FirstName, map => map.MapFrom(s => s.FirstName.FirstCharToUpper()))
                 .ForMember(d => d.LastName, map => map.MapFrom(s => s.LastName.FirstCharToUpper()))
                 .ForMember(d => d.Gender, map => map.MapFrom(s => s.Gender.FirstCharToUpper()))

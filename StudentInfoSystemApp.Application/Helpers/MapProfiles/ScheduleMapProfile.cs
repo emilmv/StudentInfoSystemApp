@@ -11,7 +11,8 @@ namespace StudentInfoSystemApp.Application.Helpers.MapProfiles
             //Map for ReturnDTO
             CreateMap<Schedule, ScheduleReturnDTO>();
             CreateMap<Course, CourseInScheduleReturnDTO>();
-            CreateMap<Instructor, InstructorInScheduleReturnDTO>();
+            CreateMap<Instructor, InstructorInScheduleReturnDTO>()
+                .ForMember(d => d.PhoneNumber, map => map.MapFrom(s => s.PhoneNumber.Trim()));
 
             //Map for CreateDTO
             CreateMap<ScheduleCreateDTO, Schedule>()

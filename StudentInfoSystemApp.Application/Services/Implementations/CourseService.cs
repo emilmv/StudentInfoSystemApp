@@ -4,6 +4,7 @@ using StudentInfoSystemApp.Application.DTOs.CourseDTOs;
 using StudentInfoSystemApp.Application.DTOs.PaginationDTOs;
 using StudentInfoSystemApp.Application.DTOs.ResponseDTOs;
 using StudentInfoSystemApp.Application.Exceptions;
+using StudentInfoSystemApp.Application.Helpers.EntityHelpers;
 using StudentInfoSystemApp.Application.Services.Interfaces;
 using StudentInfoSystemApp.Core.Entities;
 using StudentInfoSystemApp.DataAccess.Data;
@@ -25,7 +26,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
         public async Task<PaginationListDTO<CourseReturnDTO>> GetAllAsync(int page = 1, string searchInput = "", int pageSize = 3)
         {
             //Extracting query to not overload requests
-            var query = await CreateCourseQueryAsync(searchInput);
+            var query = await CourseHelper.CreateCourseQueryAsync(_studentInfoSystemContext, searchInput);
 
             //Pagination
             var paginatedCourseDatas = await _paginationService.ApplyPaginationAsync(query, page, pageSize);
@@ -46,21 +47,21 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
             if (id is null) throw new CustomException(400, "ID", "ID must not be empty");
 
             //Getting Course
-            var course = await GetCourseByIdAsync(id.Value);
+            var responseCourse = await CourseHelper.GetResponseCourseAsync(_studentInfoSystemContext, id.Value);
 
             //Return DTO
-            return _mapper.Map<CourseReturnDTO>(course);
+            return _mapper.Map<CourseReturnDTO>(responseCourse);
         }
         public async Task<CreateResponseDTO<CourseReturnDTO>> CreateAsync(CourseCreateDTO courseCreateDTO)
         {
             //Checking if Course exists in the database
-            await EnsureCourseDoesNotExistAsync(courseCreateDTO.CourseName);
+            await CourseHelper.EnsureCourseDoesNotExistAsync(_studentInfoSystemContext, courseCreateDTO.CourseName);
 
             //Ensuring that Course code is unique
-            await CheckCourseCodeUniquenessAsync(courseCreateDTO.CourseCode);
+            await CourseHelper.CheckCourseCodeUniquenessAsync(_studentInfoSystemContext, courseCreateDTO.CourseCode);
 
             //Finding relevant Program
-            await EnsureProgramExistsAsync(courseCreateDTO.ProgramID);
+            await CourseHelper.EnsureProgramExistsAsync(_studentInfoSystemContext, courseCreateDTO.ProgramID);
 
             //Mapping DTO to Object
             Course course = _mapper.Map<Course>(courseCreateDTO);
@@ -69,12 +70,15 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
             await _studentInfoSystemContext.Courses.AddAsync(course);
             await _studentInfoSystemContext.SaveChangesAsync();
 
+            //Getting Course
+            var responseCourse = await CourseHelper.GetResponseCourseAsync(_studentInfoSystemContext, course.ID);
+
             //Returning the ID of the created entity
             return new CreateResponseDTO<CourseReturnDTO>()
             {
                 Response = true,
                 CreationDate = DateTime.Now.ToShortDateString(),
-                Objects = _mapper.Map<CourseReturnDTO>(course)
+                Objects = _mapper.Map<CourseReturnDTO>(responseCourse)
             };
         }
         public async Task<bool> DeleteAsync(int? id)
@@ -83,8 +87,7 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
             if (id is null) throw new CustomException(400, "ID", "ID cannot be empty");
 
             //Checking if a Course with requested ID exists in the database
-            var existingCourse = _studentInfoSystemContext.Courses.SingleOrDefault(c => c.ID == id);
-            if (existingCourse is null) throw new CustomException(400, "ID", $"A Course with ID of: '{id}' not found in the database");
+            var existingCourse = await CourseHelper.FindCourseByID(_studentInfoSystemContext, id.Value);
 
             //Deleting the requested attendance
             _studentInfoSystemContext.Courses.Remove(existingCourse);
@@ -99,16 +102,16 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
             if (id is null) throw new CustomException(400, "Attendance ID", "Course ID must not be empty");
 
             //Finding relevant Course with ID
-            var existingCourse = await GetCourseByIdAsync(id.Value);
+            var existingCourse = await CourseHelper.GetResponseCourseAsync(_studentInfoSystemContext, id.Value);
 
             //Checking if ProgramID is changed to validate existence
-            await UpdateProgramIdAsync(courseUpdateDTO.ProgramID, existingCourse.ProgramID);
+            await CourseHelper.UpdateProgramIdAsync(_studentInfoSystemContext, courseUpdateDTO.ProgramID, existingCourse.ProgramID);
 
             //Checking if Coursename is provided
-            await UpdateCourseNameAsync(existingCourse, courseUpdateDTO);
+            await CourseHelper.UpdateCourseNameAsync(_studentInfoSystemContext, existingCourse, courseUpdateDTO);
 
             //Checking if CourseCode is provided
-            await UpdateCourseCodeAsync(existingCourse, courseUpdateDTO);
+            await CourseHelper.UpdateCourseCodeAsync(_studentInfoSystemContext, existingCourse, courseUpdateDTO);
 
             //Changing description if provided
             if (!string.IsNullOrWhiteSpace(courseUpdateDTO.Description))
@@ -119,7 +122,8 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
                 existingCourse.Credits = courseUpdateDTO.Credits.Value;
 
             //Changing ProgramID
-            existingCourse.ProgramID = courseUpdateDTO.ProgramID.GetValueOrDefault();
+            if (courseUpdateDTO.ProgramID.HasValue && courseUpdateDTO.ProgramID!=0)
+                existingCourse.ProgramID = courseUpdateDTO.ProgramID.Value;
 
             // Save changes
             _studentInfoSystemContext.Update(existingCourse);
@@ -132,109 +136,6 @@ namespace StudentInfoSystemApp.Application.Services.Implementations
                 UpdateDate = DateTime.Now.ToShortDateString(),
                 Objects = _mapper.Map<CourseReturnDTO>(existingCourse)
             };
-        }
-
-
-
-        //Private methods
-        private async Task<IQueryable<Course>> CreateCourseQueryAsync(string searchInput)
-        {
-            var query = _studentInfoSystemContext.Courses
-                .Include(c => c.Program)
-                .Include(c => c.Enrollments)
-                .Include(c => c.Schedules)
-                .AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(searchInput))
-            {
-                query = query.Where(c =>
-                    c.CourseName.ToLower().Contains(searchInput.ToLower()) ||
-                    c.CourseCode.ToLower().Contains(searchInput.ToLower()) ||
-                    c.Description.ToLower().Contains(searchInput.ToLower())
-                );
-            }
-
-            var results = await query.ToListAsync();
-
-            if (!results.Any())
-                throw new CustomException(404, "Nothing found", "No records were found matching the search criteria.");
-            return query;
-        }
-        public async Task<Course> GetCourseByIdAsync(int id)
-        {
-            var course = await _studentInfoSystemContext
-                .Courses
-                .Include(c => c.Program)
-                .Include(c => c.Enrollments)
-                .Include(c => c.Schedules)
-                .FirstOrDefaultAsync(c => c.ID == id);
-
-            if (course is null) throw new CustomException(400, "ID", $"Course with ID of:'{id}'not found in the database");
-
-            return course;
-        }
-        public async Task EnsureCourseDoesNotExistAsync(string courseName)
-        {
-            var existCourse = await _studentInfoSystemContext.Courses.SingleOrDefaultAsync(c => c.CourseName.ToLower() == courseName.ToLower());
-            if (existCourse != null)
-                throw new CustomException(400, "CourseName", $"Course with name of: '{courseName}' already exists in the database.");
-        }
-        public async Task CheckCourseCodeUniquenessAsync(string courseCode)
-        {
-            var existingCourseCode = await _studentInfoSystemContext.Courses.SingleOrDefaultAsync(c => c.CourseCode.Trim().ToLower() == courseCode.Trim().ToLower());
-            if (existingCourseCode != null)
-                throw new CustomException(400, "CourseCode", $"A course with code of: '{courseCode}' already exists in the database");
-        }
-        public async Task EnsureProgramExistsAsync(int programID)
-        {
-            var program = await _studentInfoSystemContext.Programs.SingleOrDefaultAsync(e => e.ID == programID);
-            if (program is null)
-                throw new CustomException(400, "ID", $"Program with ID of:' {programID}' not found in the database");
-        }
-        public async Task UpdateProgramIdAsync(int? programID, int existingProgramID)
-        {
-            if (existingProgramID != programID)
-            {
-                programID = (programID == null || programID == 0)
-                    ? existingProgramID
-                    : programID;
-
-                // checking if the ProgramID has changed and validate it
-                if (existingProgramID != programID)
-                {
-                    var existingProgram = await _studentInfoSystemContext.Programs
-                        .SingleOrDefaultAsync(p => p.ID == programID);
-
-                    if (existingProgram is null)
-                        throw new CustomException(400, "Program ID", $"A Program with ID of: '{programID}' not found in the database");
-                }
-            }
-        }
-        public async Task UpdateCourseNameAsync(Course existingCourse, CourseUpdateDTO courseUpdateDTO)
-        {
-            if (!string.IsNullOrWhiteSpace(courseUpdateDTO.CourseName))
-            {
-                //Checking if CourseName is available
-                var existingCourseWithSameName = await _studentInfoSystemContext.Courses.SingleOrDefaultAsync(c => c.CourseName.Trim().ToLower().Equals(courseUpdateDTO.CourseName.Trim().ToLower()));
-                if (existingCourseWithSameName != null && existingCourseWithSameName.ID != existingCourse.ID)
-                    throw new CustomException(400, "Course Name", $"A course with name of: '{courseUpdateDTO.CourseName}' already exists in the database");
-
-                //Changing CourseName
-                existingCourse.CourseName = courseUpdateDTO.CourseName;
-            }
-        }
-        public async Task UpdateCourseCodeAsync(Course existingCourse, CourseUpdateDTO courseUpdateDTO)
-        {
-            if (!string.IsNullOrWhiteSpace(courseUpdateDTO.CourseCode))
-            {
-                //Checking if CourseCode is available
-                var existingCourseCode = await _studentInfoSystemContext.Courses.SingleOrDefaultAsync(c => c.CourseCode.Trim().ToLower().Equals(courseUpdateDTO.CourseCode.Trim().ToLower()));
-                if (existingCourseCode != null && existingCourseCode != existingCourse)
-                    throw new CustomException(400, "Course Code", $"A course with code of: '{courseUpdateDTO.CourseCode}' already exists in the database");
-
-                //Changing CourseCode
-                existingCourse.CourseCode = courseUpdateDTO.CourseCode;
-            }
         }
     }
 }

@@ -10,7 +10,7 @@ namespace StudentInfoSystemApp.Application.Helpers.MapProfiles
         {
             //Map for ReturnDTO
             CreateMap<Program, ProgramReturnDTO>();
-            CreateMap<Student, StudentInProgramReturnDTO>();
+            //CreateMap<Student, StudentInProgramReturnDTO>();
             CreateMap<Course, CourseInProgramReturnDTO>();
 
             //Map for CreateDTO
